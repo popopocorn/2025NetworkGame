@@ -4,7 +4,6 @@ import random
 from background import *
 from main_ui import Player_status
 from player import Player
-from mano import Mano
 import game_world
 import game_framework
 import play_mode_2 as next_mode
@@ -18,7 +17,7 @@ import main_ui
 
 def handle_events():
 
-    global player_jump, mano_event_time
+    global player_jump
     player_jump = player.get_jump()
     events = get_events()
     curr_time=get_time()
@@ -37,19 +36,13 @@ def handle_events():
         else:
             if event.type in(SDL_KEYDOWN, SDL_KEYUP):
                 player.handle_event(event) #boy에게 event 전달
-    if curr_time - mano_event_time >= 2.0:
-        mano.handle_events(player.get_player_location())
-        mano_event_time = get_time()
     game_data.php = player.hp
     game_data.mhp = player.max_hp
     game_data.pmp = player.mp
     game_data.mmp = player.max_mp
 
 def init():
-    global player, mano, mano_event_time
-    mano_event_time = 0
-    mano = Mano()
-    game_world.add_object(mano, 1)
+    global player
     player = Player(game_data.player_info[0], game_data.player_info[1], game_data.player_info[2], game_data.enhance)
     #player = Player()
     game_world.add_object(player, 2)
@@ -62,8 +55,6 @@ def init():
     game_world.add_collision_pair("player:platform", player, None)
     for platform in platforms:
         game_world.add_collision_pair("player:platform", None, platform)
-    game_world.add_collision_pair("player:mob", player, mano)
-    game_world.add_collision_pair("skill:mob", mano, None)
     ui=Player_status()
     game_world.add_object(ui, 4)
 

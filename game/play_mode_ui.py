@@ -5,7 +5,6 @@ import random
 from main_ui import Player_status
 from background import *
 from player import Player
-from mushmom import Mushmom
 import game_world
 import game_framework
 

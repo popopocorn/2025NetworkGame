@@ -6,7 +6,6 @@ from background import *
 from player import Player
 import game_world
 import game_framework
-from timer import Timer
 import play_mode_4 as next_mode
 import game_data
 import item_mode
@@ -44,14 +43,11 @@ def handle_events():
     game_data.mmp = player.max_mp
 
 def init():
-    global player, timer, timer_event_time
+    global player, timer_event_time
     timer_event_time = 0
     player = Player(game_data.player_info[0], game_data.player_info[1], game_data.player_info[2], game_data.enhance)
     #player = Player()
     game_world.add_object(player, 2)
-    timer = Timer()
-    game_world.add_object(timer, 2)
-    game_world.add_collision_pair("player:mob", player, timer)
     background = BlockGround()
     game_world.add_object(background, 0)
     platforms = [BlockPlatform(1020, 120), BlockPlatform(870, 170), BlockPlatform(720, 170), BlockPlatform(570, 170),
