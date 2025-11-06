@@ -95,14 +95,14 @@ class Idle:
 
 
 class Player:
-    def __init__(self, hp=1000, mp=250, ad=100, enhance_list=[]):
+    def __init__(self):
         self.run_speed = ((5 * 1000) / 3600) * 10 / 0.3
         self.max_hp = 1000
-        self.hp=hp
+        self.hp=game_data.player_info[0]
         self.max_mp=250
-        self.mp = mp
-        self.ad=ad
-        self.enhance_list = enhance_list
+        self.mp = game_data.player_info[1]
+        self.ad=game_data.player_info[2]
+
 
         self.mpup = 1
         self.jump_speed = ((5 * 1000) / 3600) * 10 / 0.3
@@ -146,7 +146,6 @@ class Player:
                 Wait: {right_down: Walk, left_down: Walk, skill_down: Skill},
             }
         )
-        self.init_enhance()
     def draw(self):
         self.state_machine.draw()
         # self.font.draw(self.player_x - 50, self.player_y + 50, "mp: " + str(int(self.mp)), (255, 255, 255))
@@ -224,27 +223,6 @@ class Player:
                     self.non_hit_time_now=get_time()
                     self.player_heart = True
                     self.heart_time = get_time()
-    def init_enhance(self):
-        for e in self.enhance_list:
-            match e:
-                case "공격력 증가":
-                    self.ad *= (120/100)
-
-                case "마나 증가":
-                    self.max_mp=450
-                    self.mp+=100
-
-                case "체력 증가":
-                    self.max_hp=1500
-                    self.hp+=150
-
-                case "마나 회복속도 증가":
-                    self.mpup=3
-
-                case "무적 프레임 증가":
-                    self.non_hit_time=1.5
-
-
 class Skill:
     @staticmethod
     def enter(player, e):

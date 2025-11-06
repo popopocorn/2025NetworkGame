@@ -8,7 +8,6 @@ import game_world
 import game_framework
 import play_mode_4 as next_mode
 import game_data
-import item_mode
 from main_ui import Player_status
 
 def handle_events():
@@ -45,7 +44,7 @@ def handle_events():
 def init():
     global player, timer_event_time
     timer_event_time = 0
-    player = Player(game_data.player_info[0], game_data.player_info[1], game_data.player_info[2], game_data.enhance)
+    player = Player()
     #player = Player()
     game_world.add_object(player, 2)
     background = BlockGround()

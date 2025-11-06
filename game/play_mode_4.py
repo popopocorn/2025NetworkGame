@@ -43,8 +43,8 @@ def handle_events():
 
 def init():
     global player
-    player = Player(game_data.player_info[0], game_data.player_info[1], game_data.player_info[2], game_data.enhance)
-    #player = Player(1000, 1000, 10000)
+    player = Player()
+    
 
     game_world.add_object(player, 2)
     background = CaveGround()
