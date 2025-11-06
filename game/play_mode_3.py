@@ -82,6 +82,8 @@ def update():
         game_framework.change_mode(next_mode)
         item_mode.is_selected = False
 
+def send_info():        # 신태양 11/06
+    pass
 def pause():
     pass
 def resume():

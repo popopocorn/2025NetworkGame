@@ -9,6 +9,7 @@ import config
 from skill import *
 import end_mode
 import loadfile
+import network
 
 TIME_PER_ACTION = [0.5, 1.0, 0.68, 0.5]
 ACTION_PER_TIME = [1.0/i for i in TIME_PER_ACTION]
@@ -61,6 +62,10 @@ class Walk:
             else:
                 player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
 
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Wal\0"
 
 class Idle:
     @staticmethod
@@ -93,6 +98,10 @@ class Idle:
             else:
                 player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
 
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Idl\0"
 
 class Player:
     def __init__(self, hp=1000, mp=250, ad=100, enhance_list=[]):
@@ -175,6 +184,9 @@ class Player:
             self.hp=self.max_hp
         if get_time()-self.heart_time> self.non_hit_time:
             self.player_heart=False
+
+        # 매 프레임마다 send_buffer의 char_info를 갱신한다.         # 신태양 11/06
+        network.send_buffer.char_info.update(self)
 
     def handle_event(self, event):
         if event.type == SDL_KEYDOWN and event.key == SDLK_LALT and not self.player_jump:
@@ -264,6 +276,11 @@ class Skill:
             game_world.add_collision_pair("skill:mob", None, skill)
         else:
             player.state_machine.add_event(('TIME_OUT', 0))
+
+        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
+        # 그럼 위에 add_object는 지워야 할 듯
+        network.send_buffer.skill_info.update(player.skill_motion, player)
+
     def exit(self):
         pass
     @staticmethod
@@ -290,6 +307,11 @@ class Skill:
                 player.brandish_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
             else:
                 player.brandish_motion[int(player.frame)].draw(player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Ski\0"
 
 class Wait:
     @staticmethod
@@ -324,4 +346,8 @@ class Wait:
             else:
                 player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
 
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Wai\0"
 

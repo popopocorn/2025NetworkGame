@@ -12,6 +12,7 @@ import config
 import game_data
 import item_mode
 import main_ui
+import network
 
 # Game object class here
 
@@ -83,6 +84,10 @@ def update():
     if item_mode.is_selected:
         game_framework.change_mode(next_mode)
         item_mode.is_selected = False
+
+def send_info():        # 신태양 11/06
+    network.send_info()
+
 
 def pause():
     pass

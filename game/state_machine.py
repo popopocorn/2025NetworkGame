@@ -61,3 +61,7 @@ class StateMachine():
         self.event_queue.append(e)
     def set_transitions(self, transitions):
         self.transitions = transitions
+
+    # 현재 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    def get_current_state_name(self):
+        return self.cur_state.get_name()

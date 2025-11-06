@@ -45,6 +45,8 @@ def draw():
 def handle_events():
     events=get_events()
 
+def send_info():        # 신태양 11/06
+    pass
 def pause():
     pass
 def resume():
