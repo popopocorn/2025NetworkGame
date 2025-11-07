@@ -6,7 +6,7 @@ stack = None
 
 # 게임 프레임워크 가동 시작시 네트워크 config 구성 및 서버와 연결
 # 필요시 다른 곳에 그대로 옮겨도 됨
-network.load_network_config('server.txt')
+network.load_network_config('Server.txt')
 network.connect()
 
 def change_mode(mode):
