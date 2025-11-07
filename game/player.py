@@ -65,7 +65,7 @@ class Walk:
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
-        return "Wal\0"
+        return "Walk\0"
 
 class Idle:
     @staticmethod
@@ -101,7 +101,7 @@ class Idle:
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
-        return "Idl\0"
+        return "Idle\0"
 
 class Player:
     def __init__(self):
@@ -289,7 +289,7 @@ class Skill:
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
-        return "Ski\0"
+        return "Attk\0"
 
 class Wait:
     @staticmethod
@@ -327,5 +327,5 @@ class Wait:
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
-        return "Wai\0"
+        return "Wait\0"
 

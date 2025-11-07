@@ -5,7 +5,7 @@ class char_info:
     def __init__(self):
         self.x = 0.0
         self.y = 0.0
-        self.state = 'Idle'
+        self.state = 'Idle\0'
 
     # 전송 전 데이터를 구조체로 묶기 위한 함수       # 신태양 11/06
     def packing(self):
@@ -14,8 +14,8 @@ class char_info:
 
         # 좌표-x : float 4바이트
         # 좌표-y : float 4바이트
-        # 상태 : char 4바이트
-        return struct.pack('!ff4s', self.x, self.y, state_bytes)
+        # 상태 : char 5바이트
+        return struct.pack('!ff5s', self.x, self.y, state_bytes)
 
     # 현재 player의 정보로 내용 업데이트        # 신태양 11/06
     def update(self,player):
