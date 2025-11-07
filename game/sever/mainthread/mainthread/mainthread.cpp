@@ -2,320 +2,118 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
-
 #include <iostream>
-#include <mutex>
-#include <string>
-#include <cstdint> //°°Àº °íÁ¤ Å©±â Á¤¼ö Å¸ÀÔ
-#include <cstring>
+#include "Common.h"
 
-#pragma comment(lib, "ws2_32.lib")
-
-std::mutex g_buffer_guard;         // global mutex buffer_guard
-DWORD WINAPI recv_thread(LPVOID arg);   // ¼­¹ö recv ½º·¹µå
-
-// ÃÖ´ë ÇÃ·¹ÀÌ¾î / ÃÖ´ë ½ºÅ³ °³¼ö
-const int MAX_PLAYER = 3; 
-const int MAX_SKILL = 64;
-
-// ---------------- ÆĞÅ¶ Á¤ÀÇ ----------------
-enum PacketType : uint8_t
-{
-    PACKET_CHAR_INFO = 1,
-    PACKET_SKILL_INFO = 2
-};
-
-#pragma pack(push, 1) //ÆĞµù¾øÀÌ 1¹ÙÀÌÆ® ´ÜÀ§·Î Á¤·ÄÇÔ Áï, »çÀÌÁî ²¿ÀÓ ¹æÁö ¸ñÀû, ÆĞÅ¶À» ÁÖ°í ¹Ş±âÀ§ÇØ
-struct PacketHeader
-{
-    uint8_t  type;   // uint8_t : unsigned int 8 type ¾àÀÚ : ºÎÈ£¾ø´Â 8ºñÆ® Á¤¼ö Å¸ÀÔ ¼±¾ğ
-    uint16_t size;
-};
-
-struct CharInfo      // ³×Æ®¿öÅ©·Î ¿À°¡´Â Ä³¸¯ÅÍ Á¤º¸
+struct location
 {
     float x;
     float y;
-    char state[4];   // "Idle", "Run"
 };
 
-struct SkillInfo     // ³×Æ®¿öÅ©·Î ¿À°¡´Â ½ºÅ³ Á¤º¸
+struct char_info      //ìºë¦­í„° ì •ë³´
+{
+    location loc;
+    char state[5];   // "Idle", "Run"
+};
+
+struct skill_info     //ìŠ¤í‚¬ ì •ë³´
 {
     int   skill_id;
-    float x;
-    float y;
+    location loc;
     char  skill_direction;
     float skill_ad;
 };
-#pragma pack(pop) //CPU´Â º¸Åë 4¹ÙÀÌÆ® Á¤·ÄÀ» ÁÁ¾ÆÇØ¼­ ¼º´ÉÀ» À§ÇØ ¿ø·¡´ë·Î Á¤·ÄÇØ¾ß ÇÔ
 
-// recv´Â ÇÑ ¹ø È£ÃâÇÒ ¶§ ¿äÃ»ÇÑ ¸¸Å­ ²À ´Ù ¹Ş´Â´Ù´Â º¸ÀåÀ» º¸¿ÏÇÏ±â À§ÇÑ recv_all
-int recv_all(SOCKET s, char* buf, int size) 
+// recvëŠ” í•œ ë²ˆ í˜¸ì¶œí•  ë•Œ ìš”ì²­í•œ ë§Œí¼ ê¼­ ë‹¤ ë°›ëŠ”ë‹¤ëŠ” ë³´ì¥ì„ ë³´ì™„í•˜ê¸° ìœ„í•œ recv_allí•¨ìˆ˜ ì‚¬ìš©
+int recv_all(SOCKET s, char* buf, int size)
 {
     int received = 0;
     while (received < size)
     {
         int ret = recv(s, buf + received, size - received, 0);
-        if (ret <= 0) return ret;      // ¿¡·¯ or ²÷±è
+        if (ret <= 0) return ret;      // ì—ëŸ¬ or ëŠê¹€
         received += ret;
     }
     return received;
 }
 
-// ======== ·±Å¸ÀÓ ÄÁÅ×ÀÌ³Ê¿ë struct Á¤ÀÇ ========
-//³ªÁß¿¡ Å¬¶óÇÑÅ× º¸³»°í, Å¬¶ó´Â ±×°É ·»´õ¸µ ÇÏ±â À§ÇØ
-struct PlayerInfoRuntime   
-{
-    float x{ 0.f }; //C++11¿¡¼­ Ã³À½ »ı±ä ¹®¹ı, x¸¦ ±âº»°ª 0.0f·Î ÃÊ±âÈ­ÇØ µĞ´Ù, x = 0.0f¶û °°Àº ÀÇ¹Ì
-    float y{ 0.f };
-    float hp{ 0.f };
-    std::string state{ "Idle" };   // ³»ºÎ¿¡¼­´Â string »ç¿ë, Idle·Î ÃÊ±âÈ­
-};
-
-struct SkillInfoRuntime   
-{
-    int skill_id{ 0 }; // skill_id ±×´ë·Î °¡Á®¿È
-    float x{ 0.f };
-    float y{ 0.f };
-    char  direction{ 0 }; // skill_direction
-    float attack_damage{ 0.f }; // skill_ad
-};
-
-// ======== GameManager Å¬·¡½º ========
-class GameManager
-{
-public:
-    GameManager()
-        : skill_count(0)
-    {
-        for (int i = 0; i < MAX_PLAYER; ++i)
-            sockets[i] = INVALID_SOCKET;  // ¾ÆÁ÷ Á¢¼Ó ¾È ÇÑ »óÅÂ
-    }
-
-    void add_player(int pid, SOCKET sock)
-    {
-        if (pid < 0 || pid >= MAX_PLAYER)
-            return;
-
-        sockets[pid] = sock;
-
-        player_infos[pid].x = 0.f;
-        player_infos[pid].y = 0.f;
-        player_infos[pid].hp = 100.f; 
-        player_infos[pid].state = "Idle";
-    }
-
-    SOCKET get_player_socket(int pid)
-    {
-        if (pid < 0 || pid >= MAX_PLAYER)
-            return INVALID_SOCKET;
-        return sockets[pid];
-    }
-
-    // === Player Info Container¿¡ Write ===
-    void update_char_info(int pid, const CharInfo& info)
-    {
-        if (pid < 0 || pid >= MAX_PLAYER)
-            return;
-
-        player_infos[pid].x = info.x;
-        player_infos[pid].y = info.y;
-        player_infos[pid].state = info.state;   // std::stringÀº char*·ÎºÎÅÍ º¹»ç°¡ °¡´ÉÇØ¼­ ±×´ë·Î ´ëÀÔ °¡´É
-    }
-
-    // === Skill Info Container¿¡ Write ===
-    void push_skill_info(int , const SkillInfo& info)
-    {
-        if (skill_count >= MAX_SKILL)
-            return;  // ²Ë Ã¡À¸¸é ±×³É ¹ö¸²
-
-        SkillInfoRuntime& s = skill_infos[skill_count++];
-        s.skill_id = info.skill_id;
-        s.x = info.x;
-        s.y = info.y;
-        s.direction = info.skill_direction;
-        s.attack_damage = info.skill_ad;
-    }
-
-    void update() {  }
-    void handle_collision() {  }
-    void broadcast() {  }
-
-    bool intersects() { return false; }   
-    bool end_game() { return false; }   
-
-private:
-    PlayerInfoRuntime player_infos[MAX_PLAYER]; // Player Info Container
-    SkillInfoRuntime  skill_infos[MAX_SKILL]; // Skill Info Container
-    SOCKET sockets[MAX_PLAYER]; // ÇÃ·¹ÀÌ¾î ¼ÒÄÏ
-    int skill_count; // skill_infos¿¡ µé¾î°£ °³¼ö
-};
-
-GameManager g_game_manager;
-
-void start_game() { /* »ı·« */ }
-
-// --------------------------- mainºÎºĞ ---------------------------------
+// --------------------------- mainë¶€ë¶„ ---------------------------------
 int main()
 {
-    //À©¼Ó ÃÊ±âÈ­
     WSADATA wsa;
+    SOCKET server_sock, client_sock;
+    struct sockaddr_in server_addr, client_addr;
+    int client_size;
+    int name_len;
+
+    //ìœˆì† ì´ˆê¸°í™”
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
-        std::cerr << "WSAStartup failed\n";
+        perror("WSAStartup ì‹¤íŒ¨");
         return 1;
     }
 
-    //¸®½¼ ¼ÒÄÏ »ı¼º
-    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (listen_sock == INVALID_SOCKET)
+    //ë°”ì¸ë“œ
+    server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    server_addr.sin_port = htons(40000);
+
+    if (bind(server_sock, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
     {
-        std::cerr << "socket() failed\n";
+        perror("ë°”ì¸ë“œ ì‹¤íŒ¨");
+        closesocket(server_sock);
         WSACleanup();
         return 1;
     }
 
-    //¹ÙÀÎµå
-    sockaddr_in srv_addr{};
-    srv_addr.sin_family = AF_INET;
-    srv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    srv_addr.sin_port = htons(40000);
-
-    if (bind(listen_sock, (sockaddr*)&srv_addr, sizeof(srv_addr)) == SOCKET_ERROR)
+    //ë¦¬ìŠ¨
+    if (listen(server_sock, SOMAXCONN) == SOCKET_ERROR)
     {
-        std::cerr << "bind() failed\n";
-        closesocket(listen_sock);
+        perror("ë¦¬ìŠ¨ ì‹¤íŒ¨");
+        closesocket(server_sock);
         WSACleanup();
         return 1;
     }
 
-    //¸®½¼
-    if (listen(listen_sock, SOMAXCONN) == SOCKET_ERROR)
-    {
-        std::cerr << "listen() failed\n";
-        closesocket(listen_sock);
-        WSACleanup();
-        return 1;
-    }
-
-    std::cout << "Server listening...\n";
-
-    HANDLE hRecvThreads[MAX_PLAYER] = {};
-    int playerCount = 1;
-
-    //ÇÃ·¹ÀÌ¾î Á¢¼Ó ´ë±â + GameManager¿¡ µî·Ï + recv ½º·¹µå »ı¼º
-    while (playerCount < MAX_PLAYER)
-    {
-        sockaddr_in cli_addr{};
-        int addrlen = sizeof(cli_addr);
-
-        SOCKET client_sock = accept(listen_sock, (sockaddr*)&cli_addr, &addrlen);
-        if (client_sock == INVALID_SOCKET)
-        {
-            std::cerr << "accept() failed\n";
-            continue;
-        }
-
-        int playerId = playerCount;
-        std::cout << "Client connected, id = " << playerId << "\n";
-
-        {
-            std::lock_guard<std::mutex> lg(g_buffer_guard);
-            g_game_manager.add_player(playerId, client_sock);
-        }
-
-        // recv ½º·¹µå¿¡ ³Ñ±æ ÀÎÀÚ (player id)
-        int* pId = new int(playerId);
-        hRecvThreads[playerCount] =
-            CreateThread(nullptr, 0, recv_thread, pId, 0, nullptr);
-
-        ++playerCount;
-    }
-
-    start_game();
-
-    // ¸ŞÀÎ °ÔÀÓ ·çÇÁ (Server main thread)
-    while (!g_game_manager.end_game())
-    {
-        {
-            std::lock_guard<std::mutex> lg(g_buffer_guard);
-            g_game_manager.update();
-            g_game_manager.broadcast();
-        }
-        Sleep(16); // ¾à 60fps
-    }
-
-    // Á¤¸®
-    WaitForMultipleObjects(playerCount, hRecvThreads, TRUE, INFINITE);
-    for (int i = 0; i < playerCount; ++i)
-        CloseHandle(hRecvThreads[i]);
-
-    closesocket(listen_sock);
-    WSACleanup();
-    return 0;
-}
-
-// ----------------------- recv_thread ----------------------
-DWORD WINAPI recv_thread(LPVOID arg)
-{
-    int playerId = *static_cast<int*>(arg);
-    delete static_cast<int*>(arg);
-
-    SOCKET sock = g_game_manager.get_player_socket(playerId);
-    if (sock == INVALID_SOCKET) return 0;
+    std::cout << "Server listen...\n";
 
     while (true)
     {
-        PacketHeader hdr{};
-        int ret = recv_all(sock, reinterpret_cast<char*>(&hdr), sizeof(hdr));
-        if (ret <= 0) break; // ¿¡·¯ or Å¬¶óÀÌ¾ğÆ® Á¾·á
+        sockaddr_in client_addr{};
+        int client_size = sizeof(client_addr);
 
-        if (hdr.type == PACKET_CHAR_INFO && hdr.size == sizeof(CharInfo))
+        SOCKET client_sock = accept(server_sock, (sockaddr*)&client_addr, &client_size);
+        if (client_sock == INVALID_SOCKET)
         {
-            CharInfo info{};
-            ret = recv_all(sock, reinterpret_cast<char*>(&info), sizeof(info));
-            if (ret <= 0) break;
-
-            std::lock_guard<std::mutex> lg(g_buffer_guard);
-            g_game_manager.update_char_info(playerId, info);
-
-            char state_buf[5] = {};              // 4±ÛÀÚ + '\0'
-            std::memcpy(state_buf, info.state, 4);
-            state_buf[4] = '\0';
-
-            std::cout << "[server] CharInfo pid=" << playerId
-                << " x=" << info.x
-                << " y=" << info.y
-                << " state=" << state_buf << "\n";
+            std::cout << "accept ì‹¤íŒ¨ ë˜ëŠ” ì„œë²„ ì¢…ë£Œ\n";
+            break;
         }
-        else if (hdr.type == PACKET_SKILL_INFO && hdr.size == sizeof(SkillInfo))
-        {
-            SkillInfo info{};
-            ret = recv_all(sock, reinterpret_cast<char*>(&info), sizeof(info));
-            if (ret <= 0) break;
 
-            std::lock_guard<std::mutex> lg(g_buffer_guard);
-            g_game_manager.push_skill_info(playerId, info);
+        std::cout << "í´ë¼ì´ì–¸íŠ¸ ì—°ê²°ë¨: "
+            << inet_ntoa(client_addr.sin_addr) << std::endl;
 
-            std::cout << "[server] SkillInfo pid=" << playerId
-                << " skill_id=" << info.skill_id
-                << " x=" << info.x
-                << " y=" << info.y
-                << " dir=" << info.skill_direction
-                << " ad=" << info.skill_ad << "\n";
-        }
-        else
+        //ë£¨í”„ ëŒë©´ì„œ í´ë¼ì—ì„œ char_infoë°›ê¸°
+        while (true)
         {
-            if (hdr.size > 0)
+            char_info info{};
+            int ret = recv_all(client_sock, (char*)&info, sizeof(info));
+            if (ret <= 0)
             {
-                // vector ´ë½Å new[] »ç¿ë
-                char* junk = new char[hdr.size];
-                ret = recv_all(sock, junk, hdr.size);
-                delete[] junk;
-                if (ret <= 0) break;
+                std::cout << "í´ë¼ì´ì–¸íŠ¸ ì—°ê²° ëŠê¹€\n";
+                break;
             }
+
+            std::cout << "[server] CharInfo x =" << info.loc.x
+                << " y =" << info.loc.y
+                << " state =" << info.state << std::endl;
         }
+
+        closesocket(client_sock);
     }
 
+    closesocket(server_sock);
+    WSACleanup();
     return 0;
 }
