@@ -72,6 +72,8 @@ def update():
     game_world.handle_collisions()
 
 
+def send_info():        # 신태양 11/06
+    pass
 def pause():
     pass
 def resume():

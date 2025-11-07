@@ -45,6 +45,8 @@ def draw():
         font.draw(config.width / 2 - 100, config.height / 2, "다시하기: 1 종료: 2", (255, 255, 255))
     update_canvas()
 
+def send_info():
+    pass
 def pause():
     pass
 def resume():
