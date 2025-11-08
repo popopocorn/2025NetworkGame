@@ -3,7 +3,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <iostream>
-#include "Common.h"     // err_quit, err_display 선언/정의
+#include "Common.h"   
 
 struct location // 캐릭터 위치
 {
