@@ -25,19 +25,6 @@ struct skill_info     //스킬 정보
     float skill_ad;
 };
 
-// recv는 한 번 호출할 때 요청한 만큼 꼭 다 받는다는 보장을 보완하기 위한 recv_all함수 사용
-int recv_all(SOCKET s, char* buf, int size)
-{
-    int received = 0;
-    while (received < size)
-    {
-        int ret = recv(s, buf + received, size - received, 0);
-        if (ret <= 0) return ret;      // 에러 or 끊김
-        received += ret;
-    }
-    return received;
-}
-
 // --------------------------- main부분 ---------------------------------
 int main()
 {
@@ -98,7 +85,7 @@ int main()
         while (true)
         {
             char_info info{};
-            int ret = recv_all(client_sock, (char*)&info, sizeof(info));
+            int ret = recv(client_sock, (char*)&info, sizeof(info), 0);
             if (ret <= 0)
             {
                 std::cout << "클라이언트 연결 끊김\n";
