@@ -308,3 +308,6 @@ TEST/
 /game/__pycache__
 /game/sever/mainthread/.vs
 /game/sever/mainthread/.vs
+/game/sever/mainthread/.vs
+game/sever/mainthread/.vs/mainthread/v17/.suo
+game/sever/mainthread/.vs/mainthread/v17/Browse.VC.db
