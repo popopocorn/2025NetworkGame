@@ -10,6 +10,7 @@ import play_mode_2 as next_mode
 import config
 import game_data
 import main_ui
+import network
 
 # Game object class here
 
@@ -68,6 +69,10 @@ def finish():
 def update():
     game_world.update()
     game_world.handle_collisions()
+
+
+def send_info():        # 신태양 11/06
+    network.send_info()
 
 
 def pause():

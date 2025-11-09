@@ -1,7 +1,14 @@
+import time
+import network
+import loadfile
+
 running = None
 stack = None
 
-import time
+# 게임 프레임워크 가동 시작시 네트워크 config 구성 및 서버와 연결
+# 필요시 다른 곳에 그대로 옮겨도 됨
+network.load_network_config(loadfile.resource_path('Server.txt'))
+network.connect()
 
 def change_mode(mode):
     global stack
@@ -53,6 +60,7 @@ def run(start_mode):
 
         stack[-1].handle_events()
         stack[-1].update()
+        stack[-1].send_info()       #
         stack[-1].draw()
 
         frame_time = time.time() - current_time

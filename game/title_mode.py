@@ -42,7 +42,8 @@ def draw():
     notice.draw(config.width/2-175, config.height/2 - 150, "Press Any Key To Start", (255, 255, 255))
     update_canvas()
 
-
+def send_info():        # 신태양 11/06
+    pass
 def pause():
     pass
 def resume():
