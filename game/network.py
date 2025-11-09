@@ -22,14 +22,13 @@ buffer_lock = threading.Lock()
 # 네트워크 config 파일을 불러오는 함수       # 신태양 11/06
 # 보통은 server.txt를 불러온다.
 # 형식은
-# [KEY] = [VALUE]
+# [KEY]=[VALUE]
+# 공백 없음 주의
 def load_network_config(filename):
     global client_socket, network_config
     with open(filename, 'r', encoding='utf-8') as file:
         # 파일 정보를 라인 별로 가져옴
         for line in file:
-            # 문자열 앞 뒤 공백 자름
-            line = line.strip()
             if '=' in line:
                 # [KEY] = [VALUE]를
                 # [KEY]
