@@ -52,6 +52,15 @@ class skill_info:
     def disable(self):
         self.skill_id = -1
 
+class chars_skills_info:
+    def __init(self):
+        self.my_char_hp=0.0
+        self.other_chars_loc=[]
+        self.other_chars_state=[]
+        self.time_remaining=0.0
+        self.skills = []
+
+
 class Send_buffer:
     def __init__(self):
         self.char_info = char_info()

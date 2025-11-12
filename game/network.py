@@ -69,3 +69,11 @@ def send_info():
         return 0
     except:
         return -1
+
+
+def client_recv_thread(arg):
+    pass
+
+def recv_info(sock):
+    
+    pass
