@@ -70,10 +70,15 @@ def send_info():
     except:
         return -1
 
+#통신을 위한 클라이언트의 recv관련 함수 11/12강민서
+def client_recv_thread():
+    recved_info = chars_skills_info()
+    recv_skills=0
+    while True:
+        recv_info()
 
-def client_recv_thread(arg):
-    pass
 
-def recv_info(sock):
+def recv_info():
+    global client_socket
     
     pass
