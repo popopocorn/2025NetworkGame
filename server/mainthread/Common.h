@@ -13,13 +13,24 @@ extern void err_quit(const char* msg);
 extern void err_display(const char* msg);
 extern void err_display(int errcode);
 
-inline float ntohf(const float& network_float) {
-	int temp;
-	::memcpy(&temp, &network_float, sizeof(float));
-	temp = ntohl(temp);
-	float result;
-	::memcpy(&result, &temp, sizeof(float));
-	return result;
+namespace network {
+	inline float ntohf(const float& network_float) {
+		int temp;
+		::memcpy(&temp, &network_float, sizeof(float));
+		temp = ntohl(temp);
+		float result;
+		::memcpy(&result, &temp, sizeof(float));
+		return result;
+	}
+
+	inline float htonf(const float& host_float) {
+		int temp;
+		::memcpy(&temp, &host_float, sizeof(float));
+		temp = htonl(temp);
+		float result;
+		::memcpy(&result, &temp, sizeof(float));
+		return result;
+	}
 }
 
 #pragma pack(1)
@@ -30,8 +41,13 @@ struct location
 	float y;
 
 	void ntoh() {
-		x = ntohf(x);
-		y = ntohf(y);
+		x = network::ntohf(x);
+		y = network::ntohf(y);
+	}
+
+	void hton() {
+		x = network::htonf(x);
+		y = network::htonf(y);
 	}
 };
 
@@ -49,7 +65,7 @@ struct char_info
 // 스킬 생성자 정보
 struct skill_info
 {
-	int   skill_id;
+	int   skill_id			{-1};
 	location loc;
 	char  skill_direction;
 	float skill_ad;
@@ -57,8 +73,16 @@ struct skill_info
 	void ntoh() {
 		skill_id = ntohl(skill_id);
 		loc.ntoh();
-		skill_ad = ntohf(skill_ad);
+		skill_ad = network::ntohf(skill_ad);
 	}
+
+	void hton() {
+		skill_id = htonl(skill_id);
+		loc.hton();
+		skill_ad = network::htonf(skill_ad);
+	}
+
+	void disable() { skill_id = -1; }
 };
 
 struct char_skill_info {
