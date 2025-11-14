@@ -103,6 +103,8 @@
       <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>Common.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +121,8 @@
       <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>Common.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,12 +136,15 @@
     <ClCompile Include="Common.cpp" />
     <ClCompile Include="ConfigLoader.cpp" />
     <ClCompile Include="GameManager.cpp" />
-    <ClCompile Include="mainthread.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="RecvThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="ConfigLoader.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="RecvThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
-#include "Common.h"
-#include "ConfigLoader.h"
+#include "main.h"
+
 
 // --------------------------- main부분 ---------------------------------
 int main()
@@ -41,32 +41,54 @@ int main()
 
     std::cout << "Server listen...\n";
 
-    while (true)
+    
+    main_game = std::make_unique<game_manager>();
+
+    // 인원 모으기
+    //while (current_player_count < 1) // 테스트용
+    while (current_player_count < PLAYER_COUNT)
     {
         sockaddr_in client_addr{};
         int client_size = sizeof(client_addr);
 
         SOCKET client_sock = accept(server_sock, (sockaddr*)&client_addr, &client_size);
-        if (client_sock == INVALID_SOCKET)
+        if (INVALID_SOCKET == client_sock)
         {
             err_display("accept()");
             continue;
         }
 
-        std::cout << "Client Accept : "
-            << inet_ntoa(client_addr.sin_addr) << std::endl;
+        std::cout << "Client Accept : " << inet_ntoa(client_addr.sin_addr) << std::endl;
 
-        // ---- Server_recv_thread 생성 ----
-        HANDLE hThread = CreateThread(NULL, 0, recv_thread, (LPVOID)client_sock, 0, NULL);
-
-        if (hThread == NULL)
+        // 스레드 생성 후 스레드 내에서 복사 후 해제 or 스레드 생성 실패 시 바로 해제
+        player_info* info = new player_info{ .sock = client_sock , .id = current_player_count};
         {
+            std::lock_guard<std::mutex> lock(buffer_gaurd);
+
+            if (main_game) {
+                main_game->add_player(*info);
+            }
+        }
+        // ---- Server_recv_thread 생성 ----
+        HANDLE hThread = CreateThread(NULL, 0, recv_thread, (LPVOID)(info), 0, NULL);
+
+        if (NULL == hThread)
+        {
+            delete info;                    // 스레드 생성 실패 시 바로 해제
             err_display("CreateThread()");
             closesocket(client_sock);
             continue;
         }
+        else {
+            current_player_count++;
+        }
 
         CloseHandle(hThread);
+    }
+
+    {
+        main_game->update();
+        main_game->broadcast();
     }
 
     closesocket(server_sock);

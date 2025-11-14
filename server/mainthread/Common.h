@@ -1,3 +1,4 @@
+#pragma once
 #include <winsock2.h> // 윈속2 메인 헤더
 #include <ws2tcpip.h> // 윈속2 확장 헤더
 
@@ -49,8 +50,8 @@ struct aabb
 // 캐릭터 위치
 struct location
 {
-	float x;
-	float y;
+	float x					{};
+	float y					{};
 
 	void ntoh() {
 		x = network::ntohf(x);
@@ -66,8 +67,8 @@ struct location
 // 캐릭터 정보
 struct char_info
 {
-	location loc;
-	char state[5];   // "Idle\0"
+	location loc			{};
+	char state[5]			{"NULL"};   // "Idle\0"
 
 	void ntoh() {
 		loc.ntoh();
@@ -82,9 +83,9 @@ struct char_info
 struct skill_info
 {
 	int   skill_id			{-1};
-	location loc;
-	char  skill_direction;
-	float skill_ad;
+	location loc			{};
+	char  skill_direction	{};
+	float skill_ad			{};
 
 	void ntoh() {
 		skill_id = ntohl(skill_id);
@@ -123,18 +124,10 @@ struct char_skill_info {
 		}
 	}
 };
-struct chars_info 
-{
-	float my_char_hp;
-	location other_char_location;
-	char other_char_state[5];
-	float time_remaining;
-};
 
-struct chars_skill_info
-{
-	chars_info characters;
-	skill_info skills;
-};
 #pragma pack()
 
+struct player_info {
+	SOCKET sock;
+	int id;
+};

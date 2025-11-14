@@ -1,5 +1,17 @@
 #include "GameManager.h"
 
+void game_manager::add_player(const player_info& info)
+{
+	std::lock_guard<std::mutex> lock(buffer_gaurd);
+	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
+	players[info.id].id = info.id;
+	players[info.id].sock = info.sock;
+}
+
+void game_manager::update()
+{
+}
+
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
 void game_manager::broadcast()
 {
@@ -20,8 +32,7 @@ void game_manager::broadcast()
 				int offset{ (id + 1 + i) % PLAYER_COUNT };
 
 				//
-				send_info.characters.others[i].loc.x = players[offset].x;
-				send_info.characters.others[i].loc.y = players[offset].y;
+				send_info.characters.others[i].loc = players[offset].loc;
 				::memcpy(send_info.characters.others[i].state, players[offset].state, 5);
 			}
 			// skill 객체의 생성자는 update()에서 받아옴을 기대함
@@ -33,7 +44,7 @@ void game_manager::broadcast()
 		}
 
 		// 스킬 생성자 정보는 한번만 보낸다.
-		for (skill_info& skill : send_info.skill) {
+		for (skill_info& skill : send_info.skills) {
 			skill.disable();
 		}
 

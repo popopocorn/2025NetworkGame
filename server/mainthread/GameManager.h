@@ -8,7 +8,7 @@
 struct chars_info {
 	float my_char_hp;								// hp : 4바이트
 	float time_remaining;							// 남은 시간 : 4바이트
-	char_info others[PLAYER_COUNT-1];				// 13*2 : 26바이트
+	std::array<char_info, PLAYER_COUNT - 1> others; // 13*2 : 26바이트
 	void hton() {
 		my_char_hp = network::htonf(my_char_hp);
 		time_remaining = network::htonf(time_remaining);
@@ -20,11 +20,11 @@ struct chars_info {
 
 struct chars_skills_info {
 	chars_info characters;							// chars_info : 34바이트
-	skill_info skill[4];							// 스킬 생성자 : 17*4 = 68바이트
+	std::array<skill_info, 4> skills;				// 스킬 : 17*4 = 68바이트
 
 	void hton() {
 		characters.hton();
-		for (skill_info& info : skill) {
+		for (skill_info& info : skills) {
 			info.hton();
 		}
 	}
@@ -34,22 +34,22 @@ struct chars_skills_info {
 ////////////////////////////////////////////////////////////////////////////////////////////
 // For Update (실제 서버에서 다루는 오브젝트들)
 struct player {
-	SOCKET sock{};
-	float x;
-	float y;
-	char state[5];
-	float hp;
+	int id					{ -1 };
+	SOCKET sock				{};
+	location loc			{};
+	char state[5]			{"NULL"};
+	float hp				{};
 };
 
 struct skill_object {
-	int frame;
-	float x;
-	float y;
-	char type;
-	float attack_power;
+	int frame				{};
+	location loc			{};
+	char type				{};
+	float attack_power		{};
 
+	skill_object() {};
 	skill_object(float x, float y, char type, float attack_power)
-		: x{ x }, y{ y }, type{ type }, attack_power{ attack_power } {};
+		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
 	void update();
 	RECT get_bb() const;
 };
@@ -57,12 +57,14 @@ struct skill_object {
 
 class game_manager
 {
-	std::array<player, PLAYER_COUNT> players;
-	std::array<skill_object, PLAYER_COUNT> skills;
+public:
+	std::array<player, PLAYER_COUNT> players					{};
+	std::array<skill_object, 4> skills							{};
+
 
 	chars_skills_info send_info;				// update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
-	void add_player(const int& id, const SOCKET& sock);
+	void add_player(const player_info& info);
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;
 	void handle_collsion();
