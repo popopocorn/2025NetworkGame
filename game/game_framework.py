@@ -1,6 +1,7 @@
 import time
 import network
 import loadfile
+import threading
 
 running = None
 stack = None
@@ -9,6 +10,10 @@ stack = None
 # 필요시 다른 곳에 그대로 옮겨도 됨
 network.load_network_config(loadfile.resource_path('server.txt'))
 network.connect()
+
+# 11/15 신태양. 테스트용
+recv_thread = threading.Thread(target=network.client_recv_thread, daemon=True)
+recv_thread.start()
 
 def change_mode(mode):
     global stack

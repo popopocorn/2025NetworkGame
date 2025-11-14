@@ -76,7 +76,7 @@ def client_recv_thread():
     recv_skills=0
     while True:
         recv_info(recved_info)
-        print(recved_info)
+        recved_info.display()
 
 
 def recv_info(recved_info):

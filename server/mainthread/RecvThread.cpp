@@ -8,6 +8,8 @@ DWORD WINAPI recv_thread(LPVOID arg)
 
 	char_skill_info info{};
 
+	HANDLE hConsole{ GetStdHandle(STD_OUTPUT_HANDLE) };
+
 	while (true)
 	{
 		// recv_info 부분
@@ -26,11 +28,8 @@ DWORD WINAPI recv_thread(LPVOID arg)
 		}
 
 		info.ntoh();   // 네트워크 바이트 → 호스트 바이트
-		info.print();  // 받은 내용 출력 (여기서 \r 써서 한 줄 덮어쓰기도 가능)
-
 		{
 			std::lock_guard<std::mutex> lock(buffer_gaurd);
-
 			// 받은 플레이어 정보 -> player_container
 			// loc (x,y) : 8바이트
 			// state : 5바이트
@@ -42,7 +41,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 			;
 
 		}
-
+		
 	}
 
 	closesocket(player_sock_info.sock);

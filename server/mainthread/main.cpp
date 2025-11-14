@@ -62,13 +62,9 @@ int main()
 
         // 스레드 생성 후 스레드 내에서 복사 후 해제 or 스레드 생성 실패 시 바로 해제
         player_info* info = new player_info{ .sock = client_sock , .id = current_player_count};
-        {
-            std::lock_guard<std::mutex> lock(buffer_gaurd);
 
-            if (main_game) {
-                main_game->add_player(*info);
-            }
-        }
+        if (main_game) { main_game->add_player(*info); }
+
         // ---- Server_recv_thread 생성 ----
         HANDLE hThread = CreateThread(NULL, 0, recv_thread, (LPVOID)(info), 0, NULL);
 
@@ -86,7 +82,7 @@ int main()
         CloseHandle(hThread);
     }
 
-    {
+    while(1){
         main_game->update();
         main_game->broadcast();
     }

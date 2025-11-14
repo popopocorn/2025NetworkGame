@@ -111,17 +111,18 @@ struct char_skill_info {
 		skill.ntoh();
 	}
 
-	void print() const {
+	void print(const int& id = -1) const {
 		// [server] Char : (x, y) = (1557.1557, 888.4844), State = Idle
-		std::print("[server] Char : (x, y) = ({}, {}), State = {}\n", character.loc.x, character.loc.y, character.state);
+		std::print("\r[server] Char : id = {}, (x, y) = ({}, {}), State = {}\t\t\t\n",id, character.loc.x, character.loc.y, character.state);
 
 		if (skill.skill_id != -1) {
 
 			// [server] Skill : id = 1, (x, y) = (1557.1557, 888.4844), Direction = l, ad : 99999
-			std::print("[server]  Skill : id = {}, (x, y) = ({}, {}), Direction = {}, ad : {}\n",
+			std::print("\r[server]  Skill : id = {}, (x, y) = ({}, {}), Direction = {}, ad : {}\t\t\t\n",
 				skill.skill_id, skill.loc.x, skill.loc.y, skill.skill_direction, skill.skill_ad);
 
 		}
+		
 	}
 };
 

@@ -23,6 +23,9 @@ class char_info:
         self.y = player.player_y
         self.state = player.state_machine.get_current_state_name()
 
+    def __repr__(self):
+        return f"Char(location=({self.x},{self.y}), state={self.state})"
+
 class skill_info:
     def __init__(self):
         self.skill_id = -1
@@ -47,18 +50,25 @@ class skill_info:
         self.y = player.player_y
         self.skill_direction = player.direction.encode('ascii')
         self.skill_ad = player.ad
-        print(player.player_x, player.player_y, player.ad)
     # 스킬 생성 정보는 딱 한번만 보내기 위해 선언된 함수     # 신태양 11/06
     def disable(self):
         self.skill_id = -1
 
+    def __repr__(self):
+        if self.skill_id == -1:
+            return f"SKILL()"
+        return f"SKILL(id = {self.skill_id}, location=({self.x},{self.y}), direction={self.skill_direction}, ad={self.skill_ad})"
+
 #서버에서 받은 chars_skills_info 구조체를 unpack하기 위한 클래스 강민서11/12
 class chars_skills_info:
-    def __init(self):
+    def __init__(self):
         self.my_char_hp=0.0
         self.other_chars=[char_info(), char_info()]
         self.time_remaining=0.0
         self.skills = [skill_info() for _ in range(4)]
+
+    def display(self):
+        print(f"HP: {self.my_char_hp}, Time: {self.time_remaining}, Other Chars: {self.other_chars}, Skills: {self.skills}")
 
 
 class Send_buffer:

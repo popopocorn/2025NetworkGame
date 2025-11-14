@@ -19,8 +19,8 @@ struct chars_info {
 };
 
 struct chars_skills_info {
-	chars_info characters;							// chars_info : 34바이트
-	std::array<skill_info, 4> skills;				// 스킬 : 17*4 = 68바이트
+	chars_info characters{};							// chars_info : 34바이트
+	std::array<skill_info, 4> skills{};					// 스킬 : 17*4 = 68바이트
 
 	void hton() {
 		characters.hton();
@@ -39,6 +39,11 @@ struct player {
 	location loc			{};
 	char state[5]			{"NULL"};
 	float hp				{};
+
+	void print() const {
+		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
+		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
+	}
 };
 
 struct skill_object {
@@ -62,7 +67,7 @@ public:
 	std::array<skill_object, 4> skills							{};
 
 
-	chars_skills_info send_info;				// update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
+	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
 	void add_player(const player_info& info);
 	void update();
