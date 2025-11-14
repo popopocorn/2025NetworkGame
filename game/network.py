@@ -83,34 +83,26 @@ def recv_info(recved_info):
     global client_socket
     try:
         data = client_socket.recv(102)
-        recved_info.my_char_hp,
-        recved_info.time_remaining,
-        recved_info.other_chars[0].x,
-        recved_info.other_chars[0].y,
-        recved_info.other_chars[0].state,
-        recved_info.other_chars[1].x,
-        recved_info.other_chars[1].y,
-        recved_info.other_chars[1].state,
-        recved_info.skills[0].skill_id,
-        recved_info.skills[0].x,
-        recved_info.skills[0].y,
-        recved_info.skills[0].skill_direction,
-        recved_info.skills[0].skill_ad,
-        recved_info.skills[1].skill_id,
-        recved_info.skills[1].x,
-        recved_info.skills[1].y,
-        recved_info.skills[1].skill_direction,
-        recved_info.skills[1].skill_ad,
-        recved_info.skills[2].skill_id,
-        recved_info.skills[2].x,
-        recved_info.skills[2].y,
-        recved_info.skills[2].skill_direction,
-        recved_info.skills[2].skill_ad,
-        recved_info.skills[3].skill_id,
-        recved_info.skills[3].x,
-        recved_info.skills[3].y,
-        recved_info.skills[3].skill_direction,
-        recved_info.skills[3].skill_ad,= struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
+        vals = struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
+
+        idx = 0
+        recved_info.my_char_hp = vals[idx]; idx += 1
+        recved_info.time_remaining = vals[idx]; idx += 1
+
+        recved_info.other_chars[0].x = vals[idx]; idx += 1
+        recved_info.other_chars[0].y = vals[idx]; idx += 1
+        recved_info.other_chars[0].state = vals[idx].decode().strip('\x00'); idx += 1
+
+        recved_info.other_chars[1].x = vals[idx]; idx += 1
+        recved_info.other_chars[1].y = vals[idx]; idx += 1
+        recved_info.other_chars[1].state = vals[idx].decode().strip('\x00'); idx += 1
+
+        for i in range(4):
+            recved_info.skills[i].skill_id = vals[idx]; idx += 1
+            recved_info.skills[i].x = vals[idx]; idx += 1
+            recved_info.skills[i].y = vals[idx]; idx += 1
+            recved_info.skills[i].skill_direction = vals[idx].decode(); idx += 1
+            recved_info.skills[i].skill_ad = vals[idx]; idx += 1
         return 0                                  
     except:
         return -1
