@@ -1,7 +1,37 @@
 #include "Common.h"
 #include "ConfigLoader.h"
 
+// -------------------- recv_thread부분 --------------------
+DWORD WINAPI recv_thread(LPVOID arg)
+{
+    SOCKET client_sock = (SOCKET)arg; 
+             
+    char_skill_info info{};
 
+    while (true)
+    {
+        // recv_info 부분
+        int ret = recv(client_sock, (char*)&info, sizeof(info), 0);
+        
+        if (ret == 0)
+        {
+            // 클라가 정상 종료
+            std::cout << "Client Connection lost\n";
+            break;
+        }
+        else if (ret == SOCKET_ERROR)
+        {
+            err_display("recv()");
+            break;
+        }
+
+        info.ntoh();   // 네트워크 바이트 → 호스트 바이트
+        info.print();  // 받은 내용 출력 (여기서 \r 써서 한 줄 덮어쓰기도 가능)
+    }
+
+    closesocket(client_sock);
+    return 0;
+}
 // --------------------------- main부분 ---------------------------------
 int main()
 {
@@ -25,11 +55,10 @@ int main()
     // 바인드
     config_loader config("server.txt");
 
-    server_sock = socket(AF_INET, SOCK_STREAM, 0);
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(config.get_port_number());
-
+    
     if (bind(server_sock, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
     {
         err_quit("bind()");
@@ -55,35 +84,25 @@ int main()
             continue;
         }
 
-        std::cout << "Client Accept : " << inet_ntoa(client_addr.sin_addr) << std::endl;
+        std::cout << "Client Accept : "
+            << inet_ntoa(client_addr.sin_addr) << std::endl;
 
-        // 루프 돌면서 클라에서 char_skill_info 받기
-        char_skill_info info{};
-        while (true)
+        // ---- Server_recv_thread 생성 ----
+        HANDLE hThread = CreateThread(NULL, 0, recv_thread, (LPVOID)client_sock, 0, NULL);
+
+        if (hThread == NULL)
         {
-            
-            int ret = recv(client_sock, (char*)&info, sizeof(info), 0);
-
-            if (0 == ret)
-            {
-                // 클라 연결 종료
-                std::cout << "Client Connection lost\n";
-                break;
-            }
-            else if (SOCKET_ERROR == ret)
-            {
-                // recv 에러 출력
-                err_display("recv()");
-                break;
-            }
-            info.ntoh();        // 네트워크 바이트 정렬 -> 호스트 바이트 정렬
-            info.print();       // 받은 내용 그대로 출력
+            err_display("CreateThread()");
+            closesocket(client_sock);
+            continue;
         }
 
-        closesocket(client_sock);
+        CloseHandle(hThread);
     }
 
     closesocket(server_sock);
     WSACleanup();
     return 0;
 }
+
+
