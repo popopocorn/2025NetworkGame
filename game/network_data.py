@@ -56,9 +56,9 @@ class skill_info:
 class chars_skills_info:
     def __init(self):
         self.my_char_hp=0.0
-        self.other_chars=[]
+        self.other_chars=[char_info(), char_info()]
         self.time_remaining=0.0
-        self.skills = []
+        self.skills = [skill_info() for _ in range(4)]
 
 
 class Send_buffer:
