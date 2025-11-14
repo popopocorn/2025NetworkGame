@@ -41,3 +41,34 @@ void err_display(int errcode)
 	printf("[오류] %s\n", (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
+
+DWORD WINAPI recv_thread(LPVOID arg)
+{
+	SOCKET client_sock = (SOCKET)arg;
+
+	char_skill_info info{};
+
+	while (true)
+	{
+		// recv_info 부분
+		int ret = recv(client_sock, (char*)&info, sizeof(info), 0);
+
+		if (ret == 0)
+		{
+			// 클라가 정상 종료
+			std::cout << "Client Connection lost\n";
+			break;
+		}
+		else if (ret == SOCKET_ERROR)
+		{
+			err_display("recv()");
+			break;
+		}
+
+		info.ntoh();   // 네트워크 바이트 → 호스트 바이트
+		info.print();  // 받은 내용 출력 (여기서 \r 써서 한 줄 덮어쓰기도 가능)
+	}
+
+	closesocket(client_sock);
+	return 0;
+}

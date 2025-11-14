@@ -14,6 +14,8 @@ extern void err_quit(const char* msg);
 extern void err_display(const char* msg);
 extern void err_display(int errcode);
 
+extern DWORD WINAPI recv_thread(LPVOID arg);
+
 namespace network {
 	inline float ntohf(const float& network_float) {
 		int temp;
