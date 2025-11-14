@@ -56,8 +56,7 @@ class skill_info:
 class chars_skills_info:
     def __init(self):
         self.my_char_hp=0.0
-        self.other_chars_loc=[]
-        self.other_chars_state=[]
+        self.other_chars=[]
         self.time_remaining=0.0
         self.skills = []
 

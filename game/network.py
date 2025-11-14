@@ -75,10 +75,44 @@ def client_recv_thread():
     recved_info = chars_skills_info()
     recv_skills=0
     while True:
-        recv_info()
+        recv_info(recved_info)
 
 
-def recv_info():
+def recv_info(recved_info):
     global client_socket
+    try:
+        data = client_socket.recv(102)
+        recved_info.my_char_hp,
+        recved_info.time_remaining,
+        recved_info.other_chars[0][0],
+        recved_info.other_chars[0][1],
+        recved_info.other_chars[0][2],
+        recved_info.other_chars[1][0],
+        recved_info.other_chars[1][1],
+        recved_info.other_chars[1][2],
+        recved_info.skills[0][0],
+        recved_info.skills[0][1],
+        recved_info.skills[0][2],
+        recved_info.skills[0][3],
+        recved_info.skills[0][4],
+        recved_info.skills[1][0],
+        recved_info.skills[1][1],
+        recved_info.skills[1][2],
+        recved_info.skills[1][3],
+        recved_info.skills[1][4],
+        recved_info.skills[2][0],
+        recved_info.skills[2][1],
+        recved_info.skills[2][2],
+        recved_info.skills[2][3],
+        recved_info.skills[2][4],
+        recved_info.skills[3][0],
+        recved_info.skills[3][1],
+        recved_info.skills[3][2],
+        recved_info.skills[3][3],
+        recved_info.skills[3][4] = struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
+        return 0                                  
+    except:
+        return -1
+    
     
     pass
