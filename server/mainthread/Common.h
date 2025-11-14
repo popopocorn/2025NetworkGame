@@ -35,6 +35,15 @@ namespace network {
 }
 
 #pragma pack(1)
+// 캐릭터 박스
+struct aabb
+{
+	float max_x;
+	float max_y;
+	float min_x;
+	float min_y;
+};
+
 // 캐릭터 위치
 struct location
 {
@@ -112,6 +121,18 @@ struct char_skill_info {
 		}
 	}
 };
-#pragma pack()
+struct chars_info 
+{
+	float my_char_hp;
+	location other_char_location;
+	char other_char_state[5];
+	float time_remaining;
+};
 
+struct chars_skill_info
+{
+	chars_info characters;
+	skill_info skills;
+};
+#pragma pack()
 
