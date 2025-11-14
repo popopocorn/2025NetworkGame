@@ -61,6 +61,10 @@ struct char_info
 	void ntoh() {
 		loc.ntoh();
 	}
+
+	void hton() {
+		loc.hton();
+	}
 };
 
 // 스킬 생성자 정보
@@ -111,10 +115,3 @@ struct char_skill_info {
 #pragma pack()
 
 
-//서버에서 클라이언트로 보내는 정보 일단 서버에서 skill 처리 전까지는 skill은 전부 id: -1 로 전송
-struct chars_skills_info {
-	float player_hp;
-	float remained_time;
-	char_info others[2];
-	skill_info other_skills[4];
-};

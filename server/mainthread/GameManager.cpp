@@ -11,6 +11,7 @@ void game_manager::broadcast()
 			
 			// hp
 			send_info.characters.my_char_hp = players[id].hp;				
+			send_info.characters.time_remaining = 15.57f;
 
 			for (int i = 0; i < PLAYER_COUNT - 1; ++i) {
 				// 0번 플레이어 : 1번, 2번
@@ -18,21 +19,15 @@ void game_manager::broadcast()
 				// 2번 플레이어 : 0번, 1번
 				int offset{ (id + 1 + i) % PLAYER_COUNT };
 
-				// x, y
-				::memcpy(&send_info.characters.other_char_location[i].x,	
-					&players[offset].x,
-					sizeof(float) * 2);
-
-				// state
-				::memcpy(&send_info.characters.other_char_state[i],			
-					&players[offset].state,
-					5);
+				//
+				send_info.characters.others[i].loc.x = players[offset].x;
+				send_info.characters.others[i].loc.y = players[offset].y;
+				::memcpy(send_info.characters.others[i].state, players[offset].state, 5);
 			}
 			// skill 객체의 생성자는 update()에서 받아옴을 기대함
 
 			// 남은 시간. 추후 Timer 작성 후, 수정 필요
-			send_info.characters.time_remaining = 15.57f;					
-
+				
 			send_info.hton();
 			send(players[id].sock, (char*)&send_info, sizeof(chars_skills_info), 0);
 		}

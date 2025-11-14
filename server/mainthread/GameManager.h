@@ -7,22 +7,20 @@
 #pragma pack(1)
 struct chars_info {
 	float my_char_hp;								// hp : 4바이트
-	location other_char_location[PLAYER_COUNT-1];	// 다른 플레이어 위치 : 8*2 = 16바이트
-	char other_char_state[PLAYER_COUNT-1][5];		// 다른 플레이어 상태 : 5*2 = 10바이트
 	float time_remaining;							// 남은 시간 : 4바이트
-
+	char_info others[PLAYER_COUNT-1];				// 13*2 : 26바이트
 	void hton() {
 		my_char_hp = network::htonf(my_char_hp);
-		for (location& location : other_char_location) {
-			location.hton();
-		}
 		time_remaining = network::htonf(time_remaining);
+		for (char_info& other : others) {
+			other.hton();
+		}
 	}
 };
 
 struct chars_skills_info {
 	chars_info characters;							// chars_info : 34바이트
-	skill_info skill[PLAYER_COUNT];					// 스킬 생성자 : 17*3 = 51바이트
+	skill_info skill[4];							// 스킬 생성자 : 17*4 = 68바이트
 
 	void hton() {
 		characters.hton();
