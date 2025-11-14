@@ -52,6 +52,15 @@ class skill_info:
     def disable(self):
         self.skill_id = -1
 
+#서버에서 받은 chars_skills_info 구조체를 unpack하기 위한 클래스 강민서11/12
+class chars_skills_info:
+    def __init(self):
+        self.my_char_hp=0.0
+        self.other_chars=[char_info(), char_info()]
+        self.time_remaining=0.0
+        self.skills = [skill_info() for _ in range(4)]
+
+
 class Send_buffer:
     def __init__(self):
         self.char_info = char_info()
@@ -62,3 +71,7 @@ class Send_buffer:
     # 총 31바이트
     def packing(self):
         return self.char_info.packing() + self.skill_info.packing()
+    
+class recv_buffer:
+    def __init__(self):
+        self.recved_info = []

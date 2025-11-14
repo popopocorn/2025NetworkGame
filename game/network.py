@@ -69,3 +69,51 @@ def send_info():
         return 0
     except:
         return -1
+
+#통신을 위한 클라이언트의 recv관련 함수 11/12강민서
+def client_recv_thread():
+    recved_info = chars_skills_info()
+    recv_skills=0
+    while True:
+        recv_info(recved_info)
+        print(recved_info)
+
+
+def recv_info(recved_info):
+    global client_socket
+    try:
+        data = client_socket.recv(102)
+        recved_info.my_char_hp,
+        recved_info.time_remaining,
+        recved_info.other_chars[0].x,
+        recved_info.other_chars[0].y,
+        recved_info.other_chars[0].state,
+        recved_info.other_chars[1].x,
+        recved_info.other_chars[1].y,
+        recved_info.other_chars[1].state,
+        recved_info.skills[0].skill_id,
+        recved_info.skills[0].x,
+        recved_info.skills[0].y,
+        recved_info.skills[0].skill_direction,
+        recved_info.skills[0].skill_ad,
+        recved_info.skills[1].skill_id,
+        recved_info.skills[1].x,
+        recved_info.skills[1].y,
+        recved_info.skills[1].skill_direction,
+        recved_info.skills[1].skill_ad,
+        recved_info.skills[2].skill_id,
+        recved_info.skills[2].x,
+        recved_info.skills[2].y,
+        recved_info.skills[2].skill_direction,
+        recved_info.skills[2].skill_ad,
+        recved_info.skills[3].skill_id,
+        recved_info.skills[3].x,
+        recved_info.skills[3].y,
+        recved_info.skills[3].skill_direction,
+        recved_info.skills[3].skill_ad,= struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
+        return 0                                  
+    except:
+        return -1
+    
+    
+    pass
