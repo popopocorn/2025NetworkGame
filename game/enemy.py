@@ -34,8 +34,6 @@ class Walk:
         else:
             enemy.walk_motion[int(enemy.frame)].opacify(1)
             enemy.jump_motion.opacify(1)
-        if (enemy.direction == 'r' and enemy.enemy_x < config.width - 20) or (enemy.direction == 'l' and enemy.enemy_x > 20):
-            enemy.enemy_x += enemy.enemy_dx * enemy.run_speed * game_framework.frame_time
         enemy.frame = (enemy.frame + FRAMES_PER_ACTION[0]*ACTION_PER_TIME[0] * game_framework.frame_time)%FRAMES_PER_ACTION[0]
 
     @staticmethod
@@ -95,29 +93,13 @@ class Idle:
 
 class Enemy:
     def __init__(self):
-        self.run_speed = ((5 * 1000) / 3600) * 10 / 0.3
-        self.max_hp = 1000
-        self.hp=game_data.enemy_info[0]
-        self.max_mp=250
-        self.mp = game_data.enemy_info[1]
-        self.ad=game_data.enemy_info[2]
-
-
-        self.mpup = 1
-        self.jump_speed = ((5 * 1000) / 3600) * 10 / 0.3
-        self.non_hit_time_now = get_time()
-        self.non_hit_time = 1
-
-        self.gravity = 3
         self.enemy_jump = False
         self.enemy_heart = False
-        self.heart_time = get_time()
 
         self.enemy_dx = 0
         self.enemy_dy = 0
         self.enemy_x = 200
         self.enemy_y = 106+config.up
-        self.ground=106+config.up
         self.temp_xy=[0, 0, 0, 0]
         self.walk_motion = [load_image(loadfile.resource_path("walk" + str(x) + ".png")) for x in range(4)]
         self.idle_motion = [load_image(loadfile.resource_path("idle" + str(x) + ".png")) for x in range(3)]
@@ -150,10 +132,6 @@ class Enemy:
             self.state.exit()
             self.state = state
             self.state.enter()
-
-        
-
-
         pass
     def handle_event(self, event):
         pass
