@@ -126,9 +126,9 @@ struct char_skill_info {
 	}
 };
 
-#pragma pack()
-
 struct player_info {
 	SOCKET sock;
 	int id;
 };
+
+#pragma pack()
