@@ -84,4 +84,4 @@ class Send_buffer:
     
 class recv_buffer:
     def __init__(self):
-        self.recved_info = []
+        self.update_info = chars_skills_info()
