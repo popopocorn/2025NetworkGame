@@ -82,6 +82,13 @@ class Send_buffer:
     def packing(self):
         return self.char_info.packing() + self.skill_info.packing()
     
-class recv_buffer:
+class Recv_buffer:
     def __init__(self):
         self.update_info = chars_skills_info()
+
+    def update_char():
+        pass
+    def update_others():
+        pass
+    def update_skill():
+        pass

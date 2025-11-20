@@ -11,6 +11,7 @@ client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # 서버에 데이터 전송을 위해 존재하는 버퍼(컨테이너).     # 신태양 11/06
 send_buffer = Send_buffer()
+recv_buffer = Recv_buffer()
 
 # 동기화를 위한 전역 변수     # 신태양 11/06
 # with buffer_lock:
@@ -73,14 +74,15 @@ def send_info():
 #통신을 위한 클라이언트의 recv관련 함수 11/12강민서
 def client_recv_thread():
     recved_info = chars_skills_info()
-    recv_skills=0
     while True:
         recv_info(recved_info)
         recved_info.display()
+        #이거 동기화 해야함
+        recv_buffer.update_info.append(recved_info)
 
 
 def recv_info(recved_info):
-    global client_socket
+    global client_socket, recv_buffer
     try:
         data = client_socket.recv(102)
         vals = struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
