@@ -24,8 +24,8 @@ class Player_status:
         self.font.draw(75, 40, "60", (255, 255, 255))
         self.font.draw(150,40, "Zl존 히어로", (255, 255, 255))
 
-        self.font2.draw( config.width / 2 - 200, 50, "mp: " + str(int(game_data.php)), (255, 255, 255))
-        self.font2.draw( config.width / 2 - 50, 50, "hp: " + str(int(game_data.pmp)), (255, 255, 255))
+        self.font2.draw( config.width / 2 - 200, 50, "hp: " + str(int(game_data.php)), (255, 255, 255))
+        self.font2.draw( config.width / 2 - 50, 50, "mp: " + str(int(game_data.pmp)), (255, 255, 255))
     def update(self):
         self.hper = (game_data.php/game_data.mhp)*100
         self.mper = (game_data.pmp / game_data.mmp) * 100

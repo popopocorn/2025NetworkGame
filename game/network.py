@@ -19,6 +19,7 @@ recv_buffer = Recv_buffer()
 #   pass
 # 와 같이 사용하면 관리 용이함.
 buffer_lock = threading.Lock()
+recv_buf_lock = threading.Lock()
 
 # 네트워크 config 파일을 불러오는 함수       # 신태양 11/06
 # 보통은 server.txt를 불러온다.
@@ -73,13 +74,14 @@ def send_info():
 
 #통신을 위한 클라이언트의 recv관련 함수 11/12강민서
 def client_recv_thread():
+    global recv_buf_lock
     recved_info = chars_skills_info()
     while True:
         recv_info(recved_info)
-        recved_info.display()
         #이거 동기화 해야함
+        recv_buf_lock.acquire()
         recv_buffer.update_info.append(recved_info)
-
+        recv_buf_lock.release()
 
 def recv_info(recved_info):
     global client_socket, recv_buffer
@@ -108,6 +110,3 @@ def recv_info(recved_info):
         return 0                                  
     except:
         return -1
-    
-    
-    pass

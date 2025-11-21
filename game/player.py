@@ -162,9 +162,9 @@ class Player:
         if config.debug_flag:
             draw_rectangle(*self.get_bb())
     def update(self):
-        if self.hp<=0:
-            self.sound.play()
-            game_framework.change_mode(end_mode)
+#        if self.hp<=0:
+#            self.sound.play()
+#            game_framework.change_mode(end_mode)
         if(self.player_x +10 <self.temp_xy[0] or self.player_x -20 > self.temp_xy[2]) or\
             self.event.type == SDL_KEYDOWN and self.event.key == SDLK_DOWN :
             self.ground=106+config.up

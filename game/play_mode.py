@@ -11,6 +11,7 @@ import config
 import game_data
 import main_ui
 import network
+import enemy
 
 # Game object class here
 
@@ -56,6 +57,8 @@ def init():
         game_world.add_collision_pair("player:platform", None, platform)
     ui=Player_status()
     game_world.add_object(ui, 4)
+    e = enemy.Enemy()
+    game_world.add_object(e, 1)
 
 def draw():
     clear_canvas()
@@ -69,6 +72,7 @@ def finish():
 def update():
     game_world.update()
     game_world.handle_collisions()
+    update_info()
 
 
 def send_info():        # 신태양 11/06
@@ -79,3 +83,16 @@ def pause():
     pass
 def resume():
     pass
+
+def update_info():
+    global player
+    network.recv_buf_lock.acquire()
+    buf = network.recv_buffer.update_info[:]
+    network.recv_buffer.update_info.clear()
+    network.recv_buf_lock.release()
+    for a in buf:
+        player.hp =  a.my_char_hp
+        a.time_remaining
+        for i in range(4):
+            a.skills[i]
+    

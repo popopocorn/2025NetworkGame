@@ -324,23 +324,22 @@ class Enemy:
         self.state = Idle
 
     def draw(self):
-        self.state.draw()
         # self.font.draw(self.enemy_x - 50, self.enemy_y + 50, "mp: " + str(int(self.mp)), (255, 255, 255))
         # self.font.draw(self.enemy_x - 50, self.enemy_y + 70, "hp: " + str(int(self.hp)), (255, 255, 255))
         if config.debug_flag:
             draw_rectangle(*self.get_bb())
-    def update(self, x, y, state):
-        self.enemy_x = x
-        self.enemy_y = y
-        if(self.state != state):
-            self.state.exit()
-            self.state = state
-            self.state.enter()
+
+        self.state.draw(self)
+    def update(self):
+        self.state.do(self)
         pass
     def handle_event(self, event):
         pass
     def get_enemy_location(self):
         return self.enemy_x
+    def get_bb(self):
+        return self.enemy_x - 20, self.enemy_y - 35, self.enemy_x + 10, self.enemy_y + 30
+    
     
 
 class Skill:

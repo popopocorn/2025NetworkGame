@@ -75,3 +75,4 @@ def handle_collisions():
 
                     a.handle_collision(group, b)
                     b.handle_collision(group, a)
+
