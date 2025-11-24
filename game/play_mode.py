@@ -57,8 +57,10 @@ def init():
         game_world.add_collision_pair("player:platform", None, platform)
     ui=Player_status()
     game_world.add_object(ui, 4)
-    e = enemy.Enemy()
+    e = enemy.Enemy(100)
     game_world.add_object(e, 1)
+    e1 = enemy.Enemy()
+    game_world.add_object(e1, 1)
 
 def draw():
     clear_canvas()
@@ -81,6 +83,7 @@ def send_info():        # 신태양 11/06
 
 def pause():
     pass
+
 def resume():
     pass
 
@@ -94,7 +97,8 @@ def update_info():
         player.hp =  a.my_char_hp
         a.time_remaining
         for j in range(2):
-            a.other_chars[j]
+            game_world.world[1][j].update_info(a.other_chars[j])            
+            pass
         for i in range(4):
             a.skills[i]
         

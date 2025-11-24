@@ -124,7 +124,7 @@ class Enemy:
             self.state.exit()
             self.state = state
             self.state.enter()
-        pass
+        
     def handle_event(self, event):
         pass
     def get_enemy_location(self):
@@ -296,13 +296,13 @@ class Idle:
         return "Idle\0"
 
 class Enemy:
-    def __init__(self):
+    def __init__(self, x=200):
         self.enemy_jump = False
         self.enemy_heart = False
 
         self.enemy_dx = 0
         self.enemy_dy = 0
-        self.enemy_x = 200
+        self.enemy_x = x
         self.enemy_y = 106+config.up
         self.temp_xy=[0, 0, 0, 0]
         self.walk_motion = [load_image(loadfile.resource_path("walk" + str(x) + ".png")) for x in range(4)]
@@ -332,7 +332,22 @@ class Enemy:
         self.state.draw(self)
     def update(self):
         self.state.do(self)
-        pass
+
+    def update_info(self, info):
+        self.enemy_x = info.x
+        self.enemy_y = info.y
+        if self.state.get_name() != info.state:
+            self.state.exit()
+            if info.state == Idle.get_name():
+                self.state=Idle
+            elif info.state == Walk.get_name():
+                self.state=Walk
+            elif info.state == Skill.get_name():
+                self.state=Skill
+            elif info.state == Wait.get_name():
+                self.state=Wait
+        
+
     def handle_event(self, event):
         pass
     def get_enemy_location(self):
@@ -412,3 +427,6 @@ class Wait:
             else:
                 enemy.jump_motion.draw(enemy.enemy_x + 15, enemy.enemy_y + 5)
 
+    @staticmethod
+    def get_name():
+        return "Wait\0"
