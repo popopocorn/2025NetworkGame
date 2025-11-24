@@ -93,6 +93,9 @@ def update_info():
     for a in buf:
         player.hp =  a.my_char_hp
         a.time_remaining
+        for j in range(2):
+            a.other_chars[j]
         for i in range(4):
             a.skills[i]
+        
     
