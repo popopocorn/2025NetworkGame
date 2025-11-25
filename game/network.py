@@ -78,6 +78,7 @@ def client_recv_thread():
     recved_info = chars_skills_info()
     while True:
         recv_info(recved_info)
+        #recved_info.display()
         #이거 동기화 해야함
         recv_buf_lock.acquire()
         recv_buffer.update_info.append(recved_info)

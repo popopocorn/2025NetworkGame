@@ -177,10 +177,6 @@ class Player:
             self.mp += self.mpup * 3 * game_framework.frame_time
         elif self.mp > self.max_mp:
             self.mp=self.max_mp
-        if self.hp < self.max_hp:
-            self.hp += 1 * game_framework.frame_time
-        elif self.hp > self.max_hp:
-            self.hp=self.max_hp
         if get_time()-self.heart_time> self.non_hit_time:
             self.player_heart=False
 
