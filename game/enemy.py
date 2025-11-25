@@ -130,7 +130,7 @@ class Skill:
 
 class Wait:
     @staticmethod
-    def enter(enemy, e):
+    def enter(enemy):
 
         enemy.frame = 0
 
@@ -178,9 +178,6 @@ class Enemy:
     def __init__(self, x=200):
         self.enemy_jump = False
         self.enemy_heart = False
-
-        self.enemy_dx = 0
-        self.enemy_dy = 0
         self.enemy_x = x
         self.enemy_y = 106+config.up
         self.temp_xy=[0, 0, 0, 0]
@@ -194,17 +191,12 @@ class Enemy:
 
         self.sound = load_music(loadfile.resource_path("Tombstone.mp3"))
         self.sound.set_volume(config.volume * 2)
-
-
-        self.font =load_font(config.font, 16)
-        self.event=None
+        
         self.direction = 'r'
         self.frame = 0
         self.state = Idle
 
     def draw(self):
-        # self.font.draw(self.enemy_x - 50, self.enemy_y + 50, "mp: " + str(int(self.mp)), (255, 255, 255))
-        # self.font.draw(self.enemy_x - 50, self.enemy_y + 70, "hp: " + str(int(self.hp)), (255, 255, 255))
         if config.debug_flag:
             draw_rectangle(*self.get_bb())
 
