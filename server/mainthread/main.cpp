@@ -1,6 +1,5 @@
 #include "main.h"
 
-
 // --------------------------- main부분 ---------------------------------
 int main()
 {
@@ -48,6 +47,7 @@ int main()
     //while (current_player_count < 1) // 테스트용
     while (current_player_count < PLAYER_COUNT)
     {
+
         sockaddr_in client_addr{};
         int client_size = sizeof(client_addr);
 
@@ -82,9 +82,11 @@ int main()
         CloseHandle(hThread);
     }
 
+
     while(1){
         main_game->update();
         main_game->broadcast();
+        
     }
 
     closesocket(server_sock);

@@ -10,7 +10,7 @@ void game_manager::add_player(const player_info& info)
 
 void game_manager::update()
 {
-	static HANDLE hConsole{ GetStdHandle(STD_OUTPUT_HANDLE) };
+	game_timer.tick(60.0f);
 
 	std::array<player, PLAYER_COUNT> temp;
 	{
