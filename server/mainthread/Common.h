@@ -8,6 +8,7 @@
 #include <mutex>
 
 #define PLAYER_COUNT 3
+#define SKILL_COUNT 2
 
 extern std::mutex buffer_gaurd;
 

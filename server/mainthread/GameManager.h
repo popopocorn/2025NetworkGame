@@ -64,7 +64,7 @@ class game_manager
 {
 public:
 	std::array<player, PLAYER_COUNT> players					{};
-	std::array<skill_object, PLAYER_COUNT * 2> skills			{};
+	std::array<skill_object, PLAYER_COUNT * SKILL_COUNT> skills	{};
 
 
 	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득

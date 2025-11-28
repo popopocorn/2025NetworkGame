@@ -3,13 +3,13 @@
 
 timer::timer()
 {
-	//timeGetDevCaps(&m_timecaps, sizeof(m_timecaps));
-	timeBeginPeriod(1);
+	timeGetDevCaps(&m_timecaps, sizeof(m_timecaps));
+	timeBeginPeriod(m_timecaps.wPeriodMin);
 }
 
 timer::~timer()
 {
-	timeEndPeriod(1);
+	timeEndPeriod(m_timecaps.wPeriodMin);
 }
 
 void timer::tick(float max_fps)
@@ -23,11 +23,9 @@ void timer::tick(float max_fps)
 
     if (max_fps > 0.0f) {
 		std::chrono::nanoseconds target_duration(static_cast<long long>(1.0 / max_fps * 1000000000.0f));
-		std::cout << target_duration.count() << '\n';
 		std::chrono::time_point next = m_prev_time + target_duration;
-		std::cout << next.time_since_epoch() << '\n';
         if (now < next) { 
-			const std::chrono::nanoseconds threshold(1000000);
+			const std::chrono::nanoseconds threshold(2000000);
 
 			if (next - now > threshold) {
 				std::this_thread::sleep_until(next - threshold);
@@ -40,7 +38,6 @@ void timer::tick(float max_fps)
             now = std::chrono::steady_clock::now();
             elapsed_duration = now - m_prev_time;
         }
-		std::cout << now.time_since_epoch() << '\n';
     }
 	m_delta_time = elapsed_duration.count();
 
