@@ -118,17 +118,17 @@ class Brds:
         pass
     @staticmethod
     def do(player):
-        if player.frame < FRAMES_PER_ACTION[2]+1:
-            player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
-        if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
+        player.frame = (player.frame + FRAMES_PER_ACTION[3]*ACTION_PER_TIME[3] * game_framework.frame_time)%FRAMES_PER_ACTION[3]
+        if get_time() - player.start_time >= TIME_PER_ACTION[3]:
             player.state_machine.add_event(('TIME_OUT', 0))
+                
     @staticmethod
     def draw(player):
         if player.direction == 'r':
             player.brandish_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
         else:
             player.brandish_motion[int(player.frame)].draw(player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
-
+        print(player.frame)
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
@@ -155,9 +155,9 @@ class Aura:
         pass
     @staticmethod
     def do(player):
-        if player.frame < FRAMES_PER_ACTION[1]+1:
-            player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
-        if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
+        
+        player.frame = (player.frame + FRAMES_PER_ACTION[2]*ACTION_PER_TIME[2] * game_framework.frame_time)%FRAMES_PER_ACTION[2]
+        if get_time() - player.start_time >= TIME_PER_ACTION[2]:
             player.state_machine.add_event(('TIME_OUT', 0))
     @staticmethod
     def draw(player):

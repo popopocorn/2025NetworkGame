@@ -102,8 +102,8 @@ class Brds:
         pass
     @staticmethod
     def do(enemy):
-        if enemy.frame < FRAMES_PER_ACTION[2]+1:
-            enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
+        
+        enemy.frame = (enemy.frame + FRAMES_PER_ACTION[3]*ACTION_PER_TIME[3] * game_framework.frame_time)%FRAMES_PER_ACTION[3]
 
     @staticmethod
     def draw(enemy):
@@ -126,8 +126,8 @@ class Aura:
         pass
     @staticmethod
     def do(enemy):
-        if enemy.frame < FRAMES_PER_ACTION[1]+1:
-            enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
+
+        enemy.frame = (enemy.frame + FRAMES_PER_ACTION[2]*ACTION_PER_TIME[2] * game_framework.frame_time)%FRAMES_PER_ACTION[2]
     @staticmethod
     def draw(enemy):
         if enemy.direction == 'r':
