@@ -128,7 +128,6 @@ class Brds:
             player.brandish_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
         else:
             player.brandish_motion[int(player.frame)].draw(player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
-        print(player.frame)
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
