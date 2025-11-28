@@ -103,6 +103,115 @@ class Idle:
     def get_name():
         return "Idle\0"
 
+class Brds:
+    @staticmethod
+    def enter(player, e):
+        player.frame=0
+        player.start_time = get_time()
+        skill=Brandish(player.player_x, player.player_y, player.direction, player.ad)
+        game_world.add_object(skill, 3)
+        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
+        # 그럼 위에 add_object는 지워야 할 듯
+        network.send_buffer.skill_info.update(2, player)
+
+    def exit(self):
+        pass
+    @staticmethod
+    def do(player):
+        if player.frame < FRAMES_PER_ACTION[2]+1:
+            player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
+        if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
+            player.state_machine.add_event(('TIME_OUT', 0))
+    @staticmethod
+    def draw(player):
+        if player.direction == 'r':
+            player.brandish_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
+        else:
+            player.brandish_motion[int(player.frame)].draw(player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Brds\0"
+    
+class Aura:
+    @staticmethod
+    def enter(player, e):
+        player.frame=0
+
+        player.start_time = get_time()
+        if player.mp >= 50:
+            skill=Aura_blade(player.player_x, player.player_y, player.direction, player.ad)
+            game_world.add_object(skill, 3)
+            player.mp-=skill.mp
+        else:
+            player.state_machine.add_event(('TIME_OUT', 0))
+
+        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
+        # 그럼 위에 add_object는 지워야 할 듯
+        network.send_buffer.skill_info.update(1, player)
+
+    def exit(self):
+        pass
+    @staticmethod
+    def do(player):
+        if player.frame < FRAMES_PER_ACTION[1]+1:
+            player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
+        if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
+            player.state_machine.add_event(('TIME_OUT', 0))
+    @staticmethod
+    def draw(player):
+        if player.direction == 'r':
+            player.aura_blade_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + aura_blade_x[int(player.frame)], player.player_y + aura_blade_y[int(player.frame)])
+        else:
+            player.aura_blade_motion[int(player.frame)].draw(player.player_x - 20 - aura_blade_x[int(player.frame)], player.player_y + aura_blade_y[int(player.frame)])
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Aura\0"
+
+
+class Wait:
+    @staticmethod
+    def enter(player, e):
+
+        player.frame = 0
+
+    def exit(self):
+        pass
+
+    @staticmethod
+    def do(player):
+        if player.player_heart:
+            player.idle_motion[int(player.frame)].opacify(10000 * game_framework.frame_time % 2)
+            player.jump_motion.opacify(10000 * game_framework.frame_time % 2)
+        else:
+            player.idle_motion[int(player.frame)].opacify(1)
+            player.jump_motion.opacify(1)
+        player.frame = (player.frame + FRAMES_PER_ACTION[1] * ACTION_PER_TIME[1] * game_framework.frame_time) % \
+                       FRAMES_PER_ACTION[1]
+
+    @staticmethod
+    def draw(player):
+        if not player.player_jump:
+            if player.direction == 'r':
+                player.idle_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + 10, player.player_y)
+            else:
+                player.idle_motion[int(player.frame)].draw(player.player_x - 20, player.player_y)
+        else:
+            if player.direction == 'r':
+                player.jump_motion.composite_draw(0, 'h', player.player_x - 15, player.player_y + 5)
+            else:
+                player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Wait\0"
+
+
+
 class Player:
     def __init__(self):
         self.run_speed = ((5 * 1000) / 3600) * 10 / 0.3
@@ -149,10 +258,11 @@ class Player:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Walk: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, skill_down: Skill},
-                Idle: {right_down: Walk, left_down: Walk, skill_down: Skill},
-                Skill: {time_out: Wait},
-                Wait: {right_down: Walk, left_down: Walk, skill_down: Skill},
+                Walk: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, q_down: Aura,  w_down: Brds},
+                Idle: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds},
+                Aura: {time_out: Wait},
+                Brds: {time_out: Wait},
+                Wait: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds},
             }
         )
     def draw(self):
@@ -231,97 +341,3 @@ class Player:
                     self.non_hit_time_now=get_time()
                     self.player_heart = True
                     self.heart_time = get_time()
-class Skill:
-    @staticmethod
-    def enter(player, e):
-        player.frame=0
-
-        player.start_time = get_time()
-        if e[1].key==SDLK_q and player.mp >= 50:
-            player.skill_motion = 1
-            skill=Aura_blade(player.player_x, player.player_y, player.direction, player.ad)
-            game_world.add_object(skill, 3)
-            player.mp-=skill.mp
-
-        elif e[1].key==SDLK_w:
-            player.skill_motion = 2
-            skill=Brandish(player.player_x, player.player_y, player.direction, player.ad)
-            game_world.add_object(skill, 3)
-            game_world.add_collision_pair("skill:mob", None, skill)
-        else:
-            player.state_machine.add_event(('TIME_OUT', 0))
-
-        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
-        # 그럼 위에 add_object는 지워야 할 듯
-        network.send_buffer.skill_info.update(player.skill_motion, player)
-
-    def exit(self):
-        pass
-    @staticmethod
-    def do(player):
-        if player.skill_motion == 1:
-            if player.frame < FRAMES_PER_ACTION[1]+1:
-                player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
-            if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
-                player.state_machine.add_event(('TIME_OUT', 0))
-        if player.skill_motion == 2:
-            if player.frame < FRAMES_PER_ACTION[2]+1:
-                player.frame = (player.frame + FRAMES_PER_ACTION[player.skill_motion + 1] * ACTION_PER_TIME[player.skill_motion + 1] * game_framework.frame_time)
-            if get_time() - player.start_time >= TIME_PER_ACTION[player.skill_motion+1]:
-                player.state_machine.add_event(('TIME_OUT', 0))
-    @staticmethod
-    def draw(player):
-        if player.skill_motion == 1:
-            if player.direction == 'r':
-                player.aura_blade_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + aura_blade_x[int(player.frame)], player.player_y + aura_blade_y[int(player.frame)])
-            else:
-                player.aura_blade_motion[int(player.frame)].draw(player.player_x - 20 - aura_blade_x[int(player.frame)], player.player_y + aura_blade_y[int(player.frame)])
-        elif player.skill_motion == 2:
-            if player.direction == 'r':
-                player.brandish_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
-            else:
-                player.brandish_motion[int(player.frame)].draw(player.player_x + brandish_x[int(player.frame)], player.player_y+brandish_y[int(player.frame)])
-
-    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
-    @staticmethod
-    def get_name():
-        return "Attk\0"
-
-class Wait:
-    @staticmethod
-    def enter(player, e):
-
-        player.frame = 0
-
-    def exit(self):
-        pass
-
-    @staticmethod
-    def do(player):
-        if player.player_heart:
-            player.idle_motion[int(player.frame)].opacify(10000 * game_framework.frame_time % 2)
-            player.jump_motion.opacify(10000 * game_framework.frame_time % 2)
-        else:
-            player.idle_motion[int(player.frame)].opacify(1)
-            player.jump_motion.opacify(1)
-        player.frame = (player.frame + FRAMES_PER_ACTION[1] * ACTION_PER_TIME[1] * game_framework.frame_time) % \
-                       FRAMES_PER_ACTION[1]
-
-    @staticmethod
-    def draw(player):
-        if not player.player_jump:
-            if player.direction == 'r':
-                player.idle_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + 10, player.player_y)
-            else:
-                player.idle_motion[int(player.frame)].draw(player.player_x - 20, player.player_y)
-        else:
-            if player.direction == 'r':
-                player.jump_motion.composite_draw(0, 'h', player.player_x - 15, player.player_y + 5)
-            else:
-                player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
-
-    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
-    @staticmethod
-    def get_name():
-        return "Wait\0"
-

@@ -91,42 +91,54 @@ class Idle:
     def get_name():
         return "Idle\0"
     
-class Skill:
+class Brds:
     @staticmethod
     def enter(enemy):
         enemy.frame=0
-
-        enemy.start_time = get_time()
-        
+        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
+        # 그럼 위에 add_object는 지워야 할 듯
 
     def exit(self):
         pass
     @staticmethod
     def do(enemy):
-        if enemy.skill_motion == 1:
-            if enemy.frame < FRAMES_PER_ACTION[1]+1:
-                enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
-        if enemy.skill_motion == 2:
-            if enemy.frame < FRAMES_PER_ACTION[2]+1:
-                enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
+        if enemy.frame < FRAMES_PER_ACTION[2]+1:
+            enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
 
     @staticmethod
     def draw(enemy):
-        if enemy.skill_motion == 1:
-            if enemy.direction == 'r':
-                enemy.aura_blade_motion[int(enemy.frame)].composite_draw(0, 'h', enemy.enemy_x + aura_blade_x[int(enemy.frame)], enemy.enemy_y + aura_blade_y[int(enemy.frame)])
-            else:
-                enemy.aura_blade_motion[int(enemy.frame)].draw(enemy.enemy_x - 20 - aura_blade_x[int(enemy.frame)], enemy.enemy_y + aura_blade_y[int(enemy.frame)])
-        elif enemy.skill_motion == 2:
-            if enemy.direction == 'r':
-                enemy.brandish_motion[int(enemy.frame)].composite_draw(0, 'h', enemy.enemy_x + brandish_x[int(enemy.frame)], enemy.enemy_y+brandish_y[int(enemy.frame)])
-            else:
-                enemy.brandish_motion[int(enemy.frame)].draw(enemy.enemy_x + brandish_x[int(enemy.frame)], enemy.enemy_y+brandish_y[int(enemy.frame)])
+        if enemy.direction == 'r':
+            enemy.brandish_motion[int(enemy.frame)].composite_draw(0, 'h', enemy.enemy_x + brandish_x[int(enemy.frame)], enemy.enemy_y+brandish_y[int(enemy.frame)])
+        else:
+            enemy.brandish_motion[int(enemy.frame)].draw(enemy.enemy_x + brandish_x[int(enemy.frame)], enemy.enemy_y+brandish_y[int(enemy.frame)])
 
     # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
     @staticmethod
     def get_name():
-        return "Attk\0"
+        return "Brds\0"
+    
+class Aura:
+    @staticmethod
+    def enter(enemy):
+        enemy.frame=0
+
+    def exit(self):
+        pass
+    @staticmethod
+    def do(enemy):
+        if enemy.frame < FRAMES_PER_ACTION[1]+1:
+            enemy.frame = (enemy.frame + FRAMES_PER_ACTION[enemy.skill_motion + 1] * ACTION_PER_TIME[enemy.skill_motion + 1] * game_framework.frame_time)
+    @staticmethod
+    def draw(enemy):
+        if enemy.direction == 'r':
+            enemy.aura_blade_motion[int(enemy.frame)].composite_draw(0, 'h', enemy.enemy_x + aura_blade_x[int(enemy.frame)], enemy.enemy_y + aura_blade_y[int(enemy.frame)])
+        else:
+            enemy.aura_blade_motion[int(enemy.frame)].draw(enemy.enemy_x - 20 - aura_blade_x[int(enemy.frame)], enemy.enemy_y + aura_blade_y[int(enemy.frame)])
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Aura\0"
 
 class Wait:
     @staticmethod
@@ -169,9 +181,11 @@ class Wait:
 STATE_MAP ={
     "Idle\0": Idle,
     "Walk\0": Walk,
-    "Attk\0": Skill,
+    "Brds\0": Brds,
+    "Aura\0": Aura,
     "Wait\0": Wait,
-    "NULL\0": Idle
+    "NULL\0": Idle,
+    "\0": Idle,
 }
 
 class Enemy:

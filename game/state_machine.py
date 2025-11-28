@@ -18,13 +18,16 @@ def left_down(e):
     return e[0] =='INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
 def left_up(e):
     return e[0] =='INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
-def skill_down(e):
+def q_down(e):
     if not isinstance(e[1], int):
-        if e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and \
-                (e[1].key == SDLK_q or e[1].key == SDLK_w or e[1].key == SDLK_e or e[1].key == SDLK_r):
+        if e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_q:
             return True
     return False
-
+def w_down(e):
+    if not isinstance(e[1], int):
+        if e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_w:
+            return True
+    return False
 
 
 
