@@ -133,3 +133,12 @@ struct player_info {
 };
 
 #pragma pack()
+
+
+bool intersects(aabb a, aabb b) {
+	if (a.max_x < b.min_x) return false;
+	if (a.max_y < b.min_y) return false;
+	if (a.min_x > b.max_x) return false;
+	if (a.min_y > b.max_y) return false;
+	return true;
+}
