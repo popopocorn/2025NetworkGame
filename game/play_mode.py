@@ -12,6 +12,7 @@ import game_data
 import main_ui
 import network
 import enemy
+from skill import *
 
 # Game object class here
 
@@ -100,6 +101,13 @@ def update_info():
             game_world.world[1][j].update_info(a.other_chars[j])            
             pass
         for i in range(4):
-            a.skills[i]
+            match a.skills[i].skill_id:
+                case 1:
+                    skill = Aura_blade(player.player_x, player.player_y, player.direction, player.ad)
+                    game_world.add_object(skill, 3)
+                case 2:
+                    skill = Brandish(player.player_x, player.player_y, player.direction, player.ad)
+                    game_world.add_object(skill, 3)
+
         
     

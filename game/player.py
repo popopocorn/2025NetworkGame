@@ -143,12 +143,13 @@ class Aura:
             skill=Aura_blade(player.player_x, player.player_y, player.direction, player.ad)
             game_world.add_object(skill, 3)
             player.mp-=skill.mp
+
+            # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
+            network.send_buffer.skill_info.update(1, player)
         else:
             player.state_machine.add_event(('TIME_OUT', 0))
 
-        # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
-        # 그럼 위에 add_object는 지워야 할 듯
-        network.send_buffer.skill_info.update(1, player)
+
 
     def exit(self):
         pass

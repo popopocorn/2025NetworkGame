@@ -54,8 +54,6 @@ DWORD WINAPI recv_thread(LPVOID arg)
 					skill_offset *= 2;
 					skill_offset += info.skill.skill_id - 1;
 					::memcpy(&current_info.skills[+skill_offset], &info.skill, sizeof(skill_info));
-
-					
 				}
 			}
 		}

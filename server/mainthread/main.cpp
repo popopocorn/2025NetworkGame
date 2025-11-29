@@ -7,10 +7,6 @@ int main()
     SOCKET server_sock;
     struct sockaddr_in server_addr;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 462cbd8518c7cbb31475904772a71b7329a995ad
     // 윈속 초기화
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
