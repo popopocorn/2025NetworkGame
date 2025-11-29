@@ -7,12 +7,6 @@ int main()
     SOCKET server_sock;
     struct sockaddr_in server_addr;
 
-    timer game_timer{};
-    while (1) {
-        game_timer.tick(60.0f);
-        std::print("{}ms / {}fps\n", game_timer.get_delta_time(), game_timer.get_fps());
-    }
-
 
     // 윈속 초기화
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
