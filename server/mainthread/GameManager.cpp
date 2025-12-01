@@ -6,6 +6,52 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
+	players[info.id].hp = 300.0f;
+}
+
+bool game_manager::intersects(const RECT& a, const RECT& b) const
+{
+	if (a.right < b.left)   return false;
+	if (a.bottom < b.top)    return false;
+	if (a.left > b.right)  return false;
+	if (a.top > b.bottom) return false;
+	return true;
+}
+
+void game_manager::handle_collision()
+{
+	// 스냅샷이 아니라 실제 players / skill_objects 에 대해 처리.
+	for (auto& skill : skills)
+	{
+		if (skill.type < 0)   // 비어 있는 슬롯이면 스킵
+			continue;
+
+		RECT skill_bb = skill.get_bb();
+
+		for (auto& p : players)
+		{
+			if (p.id < 0)
+				continue;
+
+			RECT player_bb{
+				static_cast<LONG>(p.loc.x - 25),
+				static_cast<LONG>(p.loc.y - 50),
+				static_cast<LONG>(p.loc.x + 25),
+				static_cast<LONG>(p.loc.y + 50)
+			};
+
+			if (intersects(skill_bb, player_bb))
+			{
+				p.hp -= skill.attack_power;
+				if (p.hp < 0.0f) p.hp = 0.0f;
+
+				// 한 번 맞으면 스킬 제거
+				skill.type = -1;
+				skill.frame = 0;
+				break;
+			}
+		}
+	}
 }
 
 void game_manager::update()
@@ -27,6 +73,8 @@ void game_manager::update()
 	// 충돌 + HP 계산
 	handle_collision();
 }
+
+
 
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
 void game_manager::broadcast()

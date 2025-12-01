@@ -47,17 +47,104 @@ struct player {
 };
 
 struct skill_object {
-	int frame				{};
-	location loc			{};
-	char type				{};
-	float attack_power		{};
+    int frame{};                // 프레임 인덱스 (원하면 유지)
+    location loc{};
+    int type{ -1 };             // -1=비활성, 0=Aura_blade, 1=Aura, 2=Brandish
+    int direction{};
+    float attack_power{};
 
-	skill_object() {};
-	skill_object(float x, float y, char type, float attack_power)
-		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
-	void update();
-	RECT get_bb() const;
+    skill_object() = default;
+
+    skill_object(float x, float y, int skill_type, float ad, int dir)
+        : frame{ 0 }, loc{ x, y }, type{ skill_type }, direction{ dir }, attack_power{ ad } {}
+
+    void update()
+    {
+        if (type < 0)
+            return;
+
+        // 서버 틱을 60fps로 가정 (한 틱당 약 0.016초)
+        constexpr float FRAME_TIME = 1.0f / 60.0f;
+        float brandish_time = 0.0f;
+
+        // ----- Aura (type == 1) : 이동 + 화면 밖이면 삭제 -----
+        if (type == 1) {
+            const float speed = 10.0f;
+            loc.x += direction * speed;
+
+            if (loc.x > 1500.0f || loc.x < 0.0f) {
+                type = -1;
+                frame = 0;
+                brandish_time = 0.0f;
+                return;
+            }
+        }
+
+        // ----- Brandish (type == 2) : 0.78초 후 삭제 -----
+		if (type == 2) {
+			constexpr float BRANDISH_DURATION = 0.78f;
+			brandish_time += FRAME_TIME;   // 이번 틱 경과 시간 누적
+
+			if (brandish_time >= BRANDISH_DURATION) {
+				type = -1;   // 비활성
+				frame = 0;
+				brandish_time = 0.0f;
+				return;
+			}
+		}
+    }
+    RECT get_bb()
+    {
+        RECT rc{};
+        if (type < 0) return rc;
+
+        switch (type)
+        {
+        case 0: // Aura_blade : 파이썬 Aura_blade는 히트박스 안 썼지만, 대충 플레이어 주변 박스
+            rc.left = static_cast<LONG>(loc.x) - 25;
+            rc.right = static_cast<LONG>(loc.x) + 25;
+            rc.top = static_cast<LONG>(loc.y) - 25;
+            rc.bottom = static_cast<LONG>(loc.y) + 25;
+            break;
+
+        case 1: // Aura (발사체) - 파이썬 Aura.get_bb 그대로
+            if (direction == 1) {
+                rc.left = static_cast<LONG>(loc.x + 50);
+                rc.top = static_cast<LONG>(loc.y - 50);
+                rc.right = static_cast<LONG>(loc.x + 150);
+                rc.bottom = static_cast<LONG>(loc.y + 50);
+            }
+            else {
+                rc.left = static_cast<LONG>(loc.x - 150);
+                rc.top = static_cast<LONG>(loc.y - 50);
+                rc.right = static_cast<LONG>(loc.x - 50);
+                rc.bottom = static_cast<LONG>(loc.y + 50);
+            }
+            break;
+
+        case 2: // Brandish - 파이썬 Brandish.get_bb 그대로
+            if (direction == 1) {
+                rc.left = static_cast<LONG>(loc.x);
+                rc.top = static_cast<LONG>(loc.y - 70);
+                rc.right = static_cast<LONG>(loc.x + 120);
+                rc.bottom = static_cast<LONG>(loc.y + 100);
+            }
+            else {
+                rc.left = static_cast<LONG>(loc.x - 130);
+                rc.top = static_cast<LONG>(loc.y - 70);
+                rc.right = static_cast<LONG>(loc.x);
+                rc.bottom = static_cast<LONG>(loc.y + 90);
+            }
+            break;
+        default:
+            break;
+        }
+        return rc;
+    }
 };
+    
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 class game_manager
@@ -74,7 +161,7 @@ public:
 	void add_player(const player_info& info);
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;
-	void handle_collsion();
+	void handle_collision();
 	void broadcast();
 	bool end_game();
 };
