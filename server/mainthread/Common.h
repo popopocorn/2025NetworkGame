@@ -8,6 +8,7 @@
 #include <mutex>
 
 #define PLAYER_COUNT 3
+#define SKILL_COUNT 2
 
 extern std::mutex buffer_gaurd;
 
@@ -134,7 +135,7 @@ struct player_info {
 #pragma pack()
 
 
-bool intersects(aabb a, aabb b) {
+inline bool intersects(aabb a, aabb b) {
 	if (a.max_x < b.min_x) return false;
 	if (a.max_y < b.min_y) return false;
 	if (a.min_x > b.max_x) return false;

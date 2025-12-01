@@ -37,9 +37,25 @@ DWORD WINAPI recv_thread(LPVOID arg)
 					&info.character,
 					sizeof(char_info));
 
-			// 받은 스킬 -> ㅁㄹ
-			;
 
+
+
+
+			// 받은 스킬 생성자 -> send_info
+			if(info.skill.skill_id > 0){
+				for(int i = 0;i<PLAYER_COUNT-1;++i){
+					int player_offset { (player_sock_info.id + i + 1) % PLAYER_COUNT };
+					chars_skills_info& current_info{ main_game->send_info[player_offset] };
+					// 0번 플레이어 : 1번, 1번, 2번, 2번
+					// 1번 플레이어 : 2번, 2번, 0번, 0번
+					// 2번 플레이어 : 0번, 0번, 1번, 1번
+
+					int skill_offset { (player_sock_info.id + PLAYER_COUNT - 1 - player_offset) % PLAYER_COUNT };
+					skill_offset *= 2;
+					skill_offset += info.skill.skill_id - 1;
+					::memcpy(&current_info.skills[+skill_offset], &info.skill, sizeof(skill_info));
+				}
+			}
 		}
 		
 	}
