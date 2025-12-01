@@ -18,6 +18,14 @@ void game_manager::update()
 		::memcpy(temp.data(), players.data(), temp.size() * sizeof(player));
 
 	}
+
+	// 스킬 이동
+	for (auto& s : skills) {
+		s.update();
+	}
+
+	// 충돌 + HP 계산
+	handle_collision();
 }
 
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
