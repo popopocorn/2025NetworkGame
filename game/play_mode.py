@@ -103,10 +103,10 @@ def update_info():
         for i in range(4):
             match a.skills[i].skill_id:
                 case 1:
-                    skill = Aura_blade(player.player_x, player.player_y, player.direction, player.ad)
+                    skill = Aura_blade(a.skills[i].x, a.skills[i].y, a.skills[i].skill_direction, a.skills[i].skill_ad)
                     game_world.add_object(skill, 3)
                 case 2:
-                    skill = Brandish(player.player_x, player.player_y, player.direction, player.ad)
+                    skill = Brandish(a.skills[i].x, a.skills[i].y, a.skills[i].skill_direction, a.skills[i].skill_ad)
                     game_world.add_object(skill, 3)
 
         
