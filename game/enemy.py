@@ -218,9 +218,12 @@ class Enemy:
     def update(self):
         self.state.do(self)
 
-    def update_info(self, info = [200, 160, 'Idle']):
+    def update_info(self, info = [200, 160, 'Idle', 'r', False, False]):
         self.enemy_x = info.x
         self.enemy_y = info.y
+        self.direction = info.direction
+        self.enemy_jump = info.jump
+        self.enemy_heart = info.heart
 
         normalized = info.state if info.state.endswith('\0') else info.state + '\0'
         if self.state.get_name() != normalized:

@@ -6,6 +6,9 @@ class char_info:
         self.x = 0.0
         self.y = 0.0
         self.state = 'Idle\0'
+        self.direction = 'r'.encode('ascii')
+        self.jump = False
+        self.heart = False
 
     # 전송 전 데이터를 구조체로 묶기 위한 함수       # 신태양 11/06
     def packing(self):
@@ -15,16 +18,22 @@ class char_info:
         # 좌표-x : float 4바이트
         # 좌표-y : float 4바이트
         # 상태 : char 5바이트
-        return struct.pack('!ff5s', self.x, self.y, state_bytes)
+        # 방향 : char 1바이트
+        # 점프 : bool 1바이트                    # 신태양 12/05
+        # heart : bool 1바이트                  # 신태양 12/05
+        return struct.pack('!ff5s1s??', self.x, self.y, state_bytes, self.direction, self.jump, self.heart)
 
     # 현재 player의 정보로 내용 업데이트        # 신태양 11/06
     def update(self,player):
         self.x = player.player_x
         self.y = player.player_y
         self.state = player.state_machine.get_current_state_name()
+        self.direction = player.direction.encode('ascii')
+        self.jump = player.player_jump
+        self.heart = player.player_heart
 
     def __repr__(self):
-        return f"Char(location=({self.x},{self.y}), state={self.state})"
+        return f"Char(location=({self.x},{self.y}), state={self.state}), direction={self.direction}, jump={self.jump}, heart={self.heart}"
 
 class skill_info:
     def __init__(self):

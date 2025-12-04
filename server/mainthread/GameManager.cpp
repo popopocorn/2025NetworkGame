@@ -44,6 +44,9 @@ void game_manager::broadcast()
 				//
 				send_info[id].characters.others[i].loc = players[offset].loc;
 				::memcpy(send_info[id].characters.others[i].state, players[offset].state, 5);
+				send_info[id].characters.others[i].direction = players[offset].direction;
+				send_info[id].characters.others[i].jump = players[offset].jump;
+				send_info[id].characters.others[i].heart = players[offset].heart;
 			}
 			// skill 객체의 생성자는 update()에서 받아옴을 기대함
 		}

@@ -8,7 +8,7 @@
 struct chars_info {
 	float my_char_hp;								// hp : 4바이트
 	float time_remaining;							// 남은 시간 : 4바이트
-	std::array<char_info, PLAYER_COUNT - 1> others; // 13*2 : 26바이트
+	std::array<char_info, PLAYER_COUNT - 1> others; // 15*2 : 30바이트
 	void hton() {
 		my_char_hp = network::htonf(my_char_hp);
 		time_remaining = network::htonf(time_remaining);
@@ -19,7 +19,7 @@ struct chars_info {
 };
 
 struct chars_skills_info {
-	chars_info characters{};							// chars_info : 34바이트
+	chars_info characters{};							// chars_info : 38바이트
 	std::array<skill_info, 4> skills{};					// 스킬 : 17*4 = 68바이트
 
 	void hton() {
@@ -38,7 +38,10 @@ struct player {
 	SOCKET sock				{};
 	location loc			{};
 	char state[5]			{"NULL"};
-	float hp				{};
+	char direction			{};
+	bool jump				{};
+	bool heart				{};
+	float hp				{250};
 
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle

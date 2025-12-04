@@ -87,8 +87,8 @@ def client_recv_thread():
 def recv_info(recved_info):
     global client_socket, recv_buffer
     try:
-        data = client_socket.recv(102)
-        vals = struct.unpack('!ffff5sff5siff1sfiff1sfiff1sfiff1sf', data)
+        data = client_socket.recv(108)
+        vals = struct.unpack('!ffff5s1s??ff5s1s??iff1sfiff1sfiff1sfiff1sf', data)
 
         idx = 0
         recved_info.my_char_hp = vals[idx]; idx += 1
@@ -97,10 +97,16 @@ def recv_info(recved_info):
         recved_info.other_chars[0].x = vals[idx]; idx += 1
         recved_info.other_chars[0].y = vals[idx]; idx += 1
         recved_info.other_chars[0].state = vals[idx].decode().strip('\x00'); idx += 1
+        recved_info.other_chars[0].direction = vals[idx].decode(); idx += 1
+        recved_info.other_chars[0].jump = vals[idx]; idx += 1
+        recved_info.other_chars[0].heart = vals[idx]; idx += 1
 
         recved_info.other_chars[1].x = vals[idx]; idx += 1
         recved_info.other_chars[1].y = vals[idx]; idx += 1
         recved_info.other_chars[1].state = vals[idx].decode().strip('\x00'); idx += 1
+        recved_info.other_chars[1].direction = vals[idx].decode(); idx += 1
+        recved_info.other_chars[1].jump = vals[idx]; idx += 1
+        recved_info.other_chars[1].heart = vals[idx]; idx += 1
 
         for i in range(4):
             recved_info.skills[i].skill_id = vals[idx]; idx += 1
