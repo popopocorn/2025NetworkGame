@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "Timer.h"
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // For Send
 #pragma pack(1)
@@ -47,7 +48,7 @@ struct player {
 };
 
 struct skill_object {
-    int frame{};                // 프레임 인덱스 (원하면 유지)
+    int frame{};                
     location loc{};
     int type{ -1 };             // -1=비활성, 0=Aura_blade, 1=Aura, 2=Brandish
     int direction{};
@@ -60,86 +61,87 @@ struct skill_object {
 
     void update()
     {
-        if (type < 0)
-            return;
 
-        // 서버 틱을 60fps로 가정 (한 틱당 약 0.016초)
-        constexpr float FRAME_TIME = 1.0f / 60.0f;
-        float brandish_time = 0.0f;
-
-        // ----- Aura (type == 1) : 이동 + 화면 밖이면 삭제 -----
+        // Aura 화면 벗어나면 사라짐
         if (type == 1) {
+            attack_power = 10.0f;
             const float speed = 10.0f;
             loc.x += direction * speed;
-
             if (loc.x > 1500.0f || loc.x < 0.0f) {
                 type = -1;
                 frame = 0;
-                brandish_time = 0.0f;
                 return;
             }
         }
 
-        // ----- Brandish (type == 2) : 0.78초 후 삭제 -----
-		if (type == 2) {
-			constexpr float BRANDISH_DURATION = 0.78f;
-			brandish_time += FRAME_TIME;   // 이번 틱 경과 시간 누적
+        //// brandish 0.78초 뒤에 사라짐 (구현이 안됨)
+        //float elapsed_time = 0;
+        //float dt = game_timer.get_delta_time();
+        //elapsed_time += dt;
 
-			if (brandish_time >= BRANDISH_DURATION) {
-				type = -1;   // 비활성
-				frame = 0;
-				brandish_time = 0.0f;
-				return;
-			}
-		}
+        //if (type == 2) 
+        //{
+        //    float brandish_time= 0.78f;
+
+        //    if (elapsed_time >= brandish_time) {
+        //        type = -1;      // 빈 슬롯 표시
+        //        frame = 0;
+        //        return;
+        //    }
+        //}
     }
-    RECT get_bb()
+
+    // 충돌 박스
+    aabb get_bb()
     {
-        RECT rc{};
-        if (type < 0) return rc;
+        aabb box{};
+
+        if (type < 0) {
+            box.min_x = box.max_x = box.min_y = box.max_y = 0.0f;
+            return box;
+        }
 
         switch (type)
         {
-        case 0: // Aura_blade : 파이썬 Aura_blade는 히트박스 안 썼지만, 대충 플레이어 주변 박스
-            rc.left = static_cast<LONG>(loc.x) - 25;
-            rc.right = static_cast<LONG>(loc.x) + 25;
-            rc.top = static_cast<LONG>(loc.y) - 25;
-            rc.bottom = static_cast<LONG>(loc.y) + 25;
+        case 0: // Aura_blade : 플레이어 주변 작은 히트박스
+            box.min_x = loc.x - 25.0f;
+            box.max_x = loc.x + 25.0f;
+            box.min_y = loc.y - 25.0f;
+            box.max_y = loc.y + 25.0f;
             break;
 
-        case 1: // Aura (발사체) - 파이썬 Aura.get_bb 그대로
+        case 1: // Aura (발사체)
             if (direction == 1) {
-                rc.left = static_cast<LONG>(loc.x + 50);
-                rc.top = static_cast<LONG>(loc.y - 50);
-                rc.right = static_cast<LONG>(loc.x + 150);
-                rc.bottom = static_cast<LONG>(loc.y + 50);
+                box.min_x = loc.x + 50.0f;
+                box.max_x = loc.x + 150.0f;
             }
             else {
-                rc.left = static_cast<LONG>(loc.x - 150);
-                rc.top = static_cast<LONG>(loc.y - 50);
-                rc.right = static_cast<LONG>(loc.x - 50);
-                rc.bottom = static_cast<LONG>(loc.y + 50);
+                box.min_x = loc.x - 150.0f;
+                box.max_x = loc.x - 50.0f;
             }
+            box.min_y = loc.y - 50.0f;
+            box.max_y = loc.y + 50.0f;
             break;
 
-        case 2: // Brandish - 파이썬 Brandish.get_bb 그대로
+        case 2: // Brandish
             if (direction == 1) {
-                rc.left = static_cast<LONG>(loc.x);
-                rc.top = static_cast<LONG>(loc.y - 70);
-                rc.right = static_cast<LONG>(loc.x + 120);
-                rc.bottom = static_cast<LONG>(loc.y + 100);
+                box.min_x = loc.x;
+                box.max_x = loc.x + 120.0f;
             }
             else {
-                rc.left = static_cast<LONG>(loc.x - 130);
-                rc.top = static_cast<LONG>(loc.y - 70);
-                rc.right = static_cast<LONG>(loc.x);
-                rc.bottom = static_cast<LONG>(loc.y + 90);
+                box.min_x = loc.x - 130.0f;
+                box.max_x = loc.x;
             }
+            box.min_y = loc.y - 70.0f;
+            box.max_y = loc.y + 100.0f;   // 기존 bottom과 동일 느낌으로 유지
             break;
+
         default:
+            box.min_x = box.max_x = box.min_y = box.max_y = 0.0f;
             break;
         }
-        return rc;
+
+        return box;
     }
 };
     
@@ -156,7 +158,7 @@ public:
 
 	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
-	timer game_timer											{};
+	timer game_timer                                            {};
 
 	void add_player(const player_info& info);
 	void update();

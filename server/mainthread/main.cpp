@@ -1,5 +1,28 @@
 #include "main.h"
 
+bool game_start = false;
+
+// start_game 
+void start_game()
+{
+    if (current_player_count == 3)
+    {
+        const char* start_msg = "[START] Game_start!";
+        int len = static_cast<int>(strlen(start_msg));
+
+        // 플레이어들에게 start_msg 보내기
+        for (player& p : main_game->players)
+        {
+            int ret = send(p.sock, start_msg, len, 0);
+
+            if (ret == SOCKET_ERROR) {
+                err_display("send(start_msg)");
+            }
+        }
+        game_start = true;
+    }
+    
+}
 // --------------------------- main부분 ---------------------------------
 int main()
 {
@@ -82,13 +105,15 @@ int main()
         CloseHandle(hThread);
     }
 
+    // 게임시작
+    start_game();
 
-    while(1){
+    // 게임루프
+    while(game_start){
         main_game->update();
         main_game->broadcast();
-        
     }
-
+    
     closesocket(server_sock);
     WSACleanup();
     return 0;
