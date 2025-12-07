@@ -70,6 +70,9 @@ struct char_info
 {
 	location loc			{};
 	char state[5]			{"NULL"};   // "Idle\0"
+	char direction			{};
+	char jump				{};
+	char heart				{};
 
 	void ntoh() {
 		loc.ntoh();
