@@ -2,7 +2,6 @@
 #include "Common.h"
 #include "Timer.h"
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 // For Send
 #pragma pack(1)
@@ -65,31 +64,39 @@ struct skill_object {
     void update()
     {
         // Aura 화면 벗어나면 사라짐
-        if (type == 1) {
-            const float speed = 10.0f;
-            loc.x += direction * speed;
+        if (type == 1) 
+        {
+            frame++;
+            float speed = 10.0f;
+            if (direction == 1)
+            {
+                loc.x += direction * speed;
+            }
+            if (direction != 1)
+            {
+                loc.x += direction * speed;
+            }
             if (loc.x > 1500.0f || loc.x < 0.0f) {
                 type = -1;
                 frame = 0;
                 return;
             }
         }
+    
+        // 0.78초 뒤에 사라짐 1프레임당 0.16초
+        if (type == 2)
+        {            
+            int BRANDISH_FRAMES = 11;
 
-        //// brandish 0.78초 뒤에 사라짐 (구현이 안됨)
-        //float elapsed_time = 0;
-        //float dt = game_timer.get_delta_time();
-        //elapsed_time += dt;
+            frame++;
 
-        //if (type == 2) 
-        //{
-        //    float brandish_time= 0.78f;
-
-        //    if (elapsed_time >= brandish_time) {
-        //        type = -1;      // 빈 슬롯 표시
-        //        frame = 0;
-        //        return;
-        //    }
-        //}
+            if (frame >= BRANDISH_FRAMES)
+            {
+                type = -1;         
+                frame = 0;
+                return;
+            }       
+        }
     }
 
     // 충돌 박스
@@ -104,21 +111,21 @@ struct skill_object {
 
         switch (type)
         {
-        //case 0: // Aura_blade 
-        //    box.min_x = loc.x - 20.0f;
-        //    box.max_x = loc.x + 20.0f;
-        //    box.min_y = loc.y - 20.0f;
-        //    box.max_y = loc.y + 20.0f;
-        //    break;
+        case 0: // Aura_blade 
+            box.min_x = loc.x - 20.0f;
+            box.max_x = loc.x + 20.0f;
+            box.min_y = loc.y - 20.0f;
+            box.max_y = loc.y + 20.0f;
+            break;
 
         case 1: // Aura 
             if (direction == 1) {
-                box.min_x = loc.x + 50.0f;
+                box.min_x = loc.x;
                 box.max_x = loc.x + 150.0f;
             }
             else {
                 box.min_x = loc.x - 150.0f;
-                box.max_x = loc.x - 50.0f;
+                box.max_x = loc.x;
             }
             box.min_y = loc.y - 50.0f;
             box.max_y = loc.y + 50.0f;
@@ -146,17 +153,12 @@ struct skill_object {
     }
 };
     
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////
-
 class game_manager
 {
 public:
 	std::array<player, PLAYER_COUNT> players					{};
-	std::array<skill_object, PLAYER_COUNT * SKILL_COUNT> skills	{};
-
-
+    std::array<skill_object, PLAYER_COUNT* SKILL_COUNT> skills  {};
 	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
 	timer game_timer                                            {};
@@ -168,4 +170,3 @@ public:
 	void broadcast();
 	bool end_game();
 };
-

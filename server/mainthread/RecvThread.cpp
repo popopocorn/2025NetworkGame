@@ -49,11 +49,14 @@ DWORD WINAPI recv_thread(LPVOID arg)
 				skill_object& obj = main_game->skills[skill_insert_offset];
 
 				obj.loc = info.skill.loc;
-				obj.direction = info.skill.skill_direction;
+				if (info.skill.skill_direction == 'r')
+					obj.direction = 1;     // 오른쪽
+				else
+					obj.direction = -1;    // 왼쪽
 				obj.type = info.skill.skill_id;
 				obj.attack_power = info.skill.skill_ad;
-				obj.owner_id = player_sock_info.id;   // ★ 스킬 사용자의 ID 설정
-
+				obj.owner_id = player_sock_info.id;  
+				std::cout << "[RECV DIR] direction = " << info.skill.skill_direction << std::endl;
 
 
 				for(int i = 0;i<PLAYER_COUNT-1;++i){

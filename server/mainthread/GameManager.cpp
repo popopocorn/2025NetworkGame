@@ -13,8 +13,14 @@ void game_manager::handle_collision()
 {
 	for (skill_object& s : skills)
 	{
-		if (s.type < 0)   // 비어 있는 슬롯이면 스킵
+		if (s.type < 0)  
 			continue;
+
+		if (s.type == 1)
+		{
+			std::cout << "[Aura Update] loc=("
+				<< s.loc.x << ", " << s.loc.y << ")\n";
+		}
 
 		// 스킬의 AABB
 		aabb skill_bb = s.get_bb();
@@ -25,13 +31,20 @@ void game_manager::handle_collision()
 				continue;
 
 			if (p.id == s.owner_id)
-				continue;   // ★ 자기 스킬은 판정 제외
+				continue;   // 자기 스킬은 판정 제외
 
 			aabb player_bb;
 			player_bb.min_x = p.loc.x - 20.0f;
 			player_bb.max_x = p.loc.x + 10.0f;
 			player_bb.min_y = p.loc.y - 35.0f;
 			player_bb.max_y = p.loc.y + 30.0f;
+
+			if (s.type == 1)
+			{
+				std::cout << "[Aura Collision Check] Aura("
+					<< s.loc.x << ") vs Player("
+					<< p.loc.x << ")\n";
+			}
 
 			if (::intersects(skill_bb, player_bb))
 			{
