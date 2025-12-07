@@ -41,7 +41,8 @@ struct player {
 	char direction			{};
 	bool jump				{};
 	bool heart				{};
-	float hp				{1000};
+	float hp				{};
+
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
@@ -54,33 +55,121 @@ struct skill_object {
 	location loc			{};
 	char type				{};
 	float attack_power		{};
-	RECT aabb;
+    int direction           {};
+
+    int owner_id        { -1 };
 
 	skill_object() {};
-	skill_object(float x, float y, char type, float attack_power)
-		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
-	void update();
-	RECT get_bb();
-};
-////////////////////////////////////////////////////////////////////////////////////////////
+	skill_object(float x, float y, char type, float attack_power, int dir)
+        : frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }, direction{ dir } {};
 
+    void update()
+    {
+        // Aura 화면 벗어나면 사라짐
+        if (type == 1) 
+        {
+            frame++;
+            attack_power = 80; // 공격력 80
+            float speed = 10.0f;
+            if (direction == 1)
+            {
+                loc.x += direction * speed;
+            }
+            if (direction != 1)
+            {
+                loc.x += direction * speed;
+            }
+            if (loc.x > 1500.0f || loc.x < 0.0f) {
+                type = -1;
+                frame = 0;
+                return;
+            }
+        }
+    
+        // 0.78초 뒤에 사라짐 1프레임당 0.16초
+        if (type == 2)
+        {            
+            int BRANDISH_FRAMES = 11;
+            attack_power = 120; // 공격력 120
+            frame++;
+
+            if (frame >= BRANDISH_FRAMES)
+            {
+                type = -1;         
+                frame = 0;
+                return;
+            }       
+        }
+    }
+
+    // 충돌 박스
+    RECT get_bb()
+    {
+        RECT box{};
+
+        if (type < 0) {
+            box.left = box.right = box.top = box.bottom = 0;
+            return box;
+        }
+
+        switch (type)
+        {
+        case 0: // Aura_blade 
+            box.left = static_cast<LONG>(loc.x - 20.0f);
+            box.right = static_cast<LONG>(loc.x + 20.0f);
+            box.top = static_cast<LONG>(loc.y - 20.0f);
+            box.bottom = static_cast<LONG>(loc.y + 20.0f);
+            break;
+
+        case 1: // Aura 
+            if (direction == 1) {  // 오른쪽 공격
+                box.left = static_cast<LONG>(loc.x);
+                box.right = static_cast<LONG>(loc.x + 150.0f);
+            }
+            else {                 // 왼쪽 공격
+                box.left = static_cast<LONG>(loc.x - 150.0f);
+                box.right = static_cast<LONG>(loc.x);
+            }
+            box.top = static_cast<LONG>(loc.y - 50.0f);
+            box.bottom = static_cast<LONG>(loc.y + 50.0f);
+            break;
+
+        case 2: // Brandish
+            if (direction == 1) {
+                box.left = static_cast<LONG>(loc.x);
+                box.right = static_cast<LONG>(loc.x + 120.0f);
+            }
+            else {
+                box.left = static_cast<LONG>(loc.x - 130.0f);
+                box.right = static_cast<LONG>(loc.x);
+            }
+            box.top = static_cast<LONG>(loc.y - 70.0f);
+            box.bottom = static_cast<LONG>(loc.y + 100.0f);
+            break;
+
+        default:
+            box.left = box.right = box.top = box.bottom = 0;
+            break;
+        }
+        return box;
+    }
+};
+    
+////////////////////////////////////////////////////////////////////////////////////////////
 class game_manager
 {
 public:
 	std::array<player, PLAYER_COUNT> players					{};
-	std::array<skill_object, PLAYER_COUNT * SKILL_COUNT> skills	{};
-
-
+    std::array<skill_object, PLAYER_COUNT* SKILL_COUNT> skills  {};
 	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
-	timer game_timer											{};
+	timer game_timer                                            {};
 
 	void start_game();
 	void add_player(const player_info& info);
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;
-	void handle_collsion();
+	void handle_collision();
 	void broadcast();
 	bool end_game();
 };
-

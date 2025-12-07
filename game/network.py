@@ -121,6 +121,6 @@ def recv_info(recved_info):
             recved_info.skills[i].y = vals[idx]; idx += 1
             recved_info.skills[i].skill_direction = vals[idx].decode(); idx += 1
             recved_info.skills[i].skill_ad = vals[idx]; idx += 1
-        return 0                                  
+        return 0
     except:
         return -1

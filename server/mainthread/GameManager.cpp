@@ -13,6 +13,52 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
+	players[info.id].hp = 1000.0f;
+}
+
+void game_manager::handle_collision()
+{
+	for (skill_object& s : skills)
+	{
+		if (s.type < 0)  
+			continue;
+
+		// 스킬의 AABB
+		RECT skill_bb = s.get_bb();
+
+		for (player& p : players)
+		{
+			if (p.id < 0)
+				continue;
+
+			std::cout << "[Collision] Skill type=" << (int)s.type
+				<< " loc=(" << s.loc.x << ", " << s.loc.y << ")\n";
+			std::cout << "    Checking vs Player " << p.id
+				<< " loc=(" << p.loc.x << ", " << p.loc.y << ")\n";
+			if (p.id == s.owner_id)
+				continue;   // 자기 스킬은 판정 제외
+
+			RECT player_bb;
+			player_bb.left = static_cast<LONG>(p.loc.x - 20.0f);
+			player_bb.right = static_cast<LONG>(p.loc.x + 10.0f);
+			player_bb.top = static_cast<LONG>(p.loc.y - 35.0f);
+			player_bb.bottom = static_cast<LONG>(p.loc.y + 30.0f);
+
+			if (intersects(skill_bb, player_bb))
+			{
+				p.hp -= s.attack_power;
+				if (p.hp < 0.0f)
+					p.hp = 0.0f;
+
+				//깎인 hp 전송
+				send_info[p.id].characters.my_char_hp = p.hp;
+
+				s.type = -1;
+				s.frame = 0;
+				break;
+			}
+		}
+	}
 }
 
 void game_manager::update()
@@ -23,19 +69,25 @@ void game_manager::update()
 	{
 		std::lock_guard<std::mutex> buffer_lock(buffer_gaurd);
 		::memcpy(temp.data(), players.data(), temp.size() * sizeof(player));
-
 	}
+
+	// 스킬 업데이트
+	for (skill_object& skill : skills) {
+		skill.update();
+	}
+
+	// 충돌 + hp 계산
+	handle_collision();
 }
 
-bool game_manager::intersects(const RECT& aabb1, const RECT& aabb2) const
+bool game_manager::intersects(const RECT& a, const RECT& b) const
 {
-	if (aabb1.right < aabb2.left)   return false;
-	if (aabb1.bottom < aabb2.top)    return false;
-	if (aabb1.left > aabb2.right)  return false;
-	if (aabb1.top > aabb2.bottom) return false;
+	if (a.right < b.left)   return false;
+	if (a.left > b.right)   return false; 
+	if (a.bottom < b.top)   return false;
+	if (a.top > b.bottom)   return false; 
 	return true;
 }
-
 
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
 void game_manager::broadcast()
@@ -66,6 +118,7 @@ void game_manager::broadcast()
 				send_info[id].characters.others[i].heart = players[offset].heart;
 			}
 			// skill 객체의 생성자는 update()에서 받아옴을 기대함
+			
 		}
 	}
 
@@ -89,6 +142,55 @@ RECT player::get_bb() const
 	rc.top = static_cast<LONG>(loc.y - 35);
 	rc.right = static_cast<LONG>(loc.x + 10);
 	rc.bottom = static_cast<LONG>(loc.y + 30);
-
 	return rc;
+}
+
+bool game_manager::end_game()
+{
+	float end_time = game_timer.get_elapsed_time();
+
+	//60초 지나기 전 까지 false 반환 지나면 true 
+	if (end_time < 60.0f) {
+		return false;
+	}
+
+	int winner_id = -1;
+	float best_hp = -1.0f;
+
+	// 가장 hp 높은 플레이어 찾기
+	for (int i = 0; i < PLAYER_COUNT; ++i)
+	{
+		player& p = players[i];
+		if (p.id >= 0 && p.hp > 0.0f)
+		{
+			if (p.hp > best_hp)
+			{
+				best_hp = p.hp;
+				winner_id = i;
+			}
+		}
+	}
+
+	const char* win_msg = "WIN";
+	const char* lose_msg = "LOSE";
+
+	// 승패 메시지 전송
+	for (int i = 0; i < PLAYER_COUNT; ++i)
+	{
+		player& p = players[i];
+
+		if (p.id < 0) continue;
+		if (p.sock == INVALID_SOCKET) continue;
+
+		// 피 상태가 제일 좋으면 win_msg 아니면 lose_msg
+		const char* msg = (i == winner_id ? win_msg : lose_msg);
+
+		int len = static_cast<int>(std::strlen(msg));
+		int ret = send(p.sock, msg, len, 0);
+
+		if (ret == SOCKET_ERROR) {
+			err_display("send(end_game msg)");
+		}
+	}
+	return true;
 }
