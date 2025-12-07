@@ -41,6 +41,7 @@ struct player {
 	char state[5]			{"NULL"};
 	float hp				{};
 
+
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
@@ -54,6 +55,8 @@ struct skill_object {
     int direction{};
     float attack_power{};
 
+    int owner_id{ -1 };
+
     skill_object() = default;
 
     skill_object(float x, float y, int skill_type, float ad, int dir)
@@ -61,10 +64,8 @@ struct skill_object {
 
     void update()
     {
-
         // Aura 화면 벗어나면 사라짐
         if (type == 1) {
-            attack_power = 10.0f;
             const float speed = 10.0f;
             loc.x += direction * speed;
             if (loc.x > 1500.0f || loc.x < 0.0f) {
@@ -103,14 +104,14 @@ struct skill_object {
 
         switch (type)
         {
-        case 0: // Aura_blade : 플레이어 주변 작은 히트박스
-            box.min_x = loc.x - 25.0f;
-            box.max_x = loc.x + 25.0f;
-            box.min_y = loc.y - 25.0f;
-            box.max_y = loc.y + 25.0f;
-            break;
+        //case 0: // Aura_blade 
+        //    box.min_x = loc.x - 20.0f;
+        //    box.max_x = loc.x + 20.0f;
+        //    box.min_y = loc.y - 20.0f;
+        //    box.max_y = loc.y + 20.0f;
+        //    break;
 
-        case 1: // Aura (발사체)
+        case 1: // Aura 
             if (direction == 1) {
                 box.min_x = loc.x + 50.0f;
                 box.max_x = loc.x + 150.0f;
@@ -133,7 +134,7 @@ struct skill_object {
                 box.max_x = loc.x;
             }
             box.min_y = loc.y - 70.0f;
-            box.max_y = loc.y + 100.0f;   // 기존 bottom과 동일 느낌으로 유지
+            box.max_y = loc.y + 100.0f;  
             break;
 
         default:

@@ -7,7 +7,7 @@ void start_game()
 {
     if (current_player_count == 3)
     {
-        const char* start_msg = "[START] Game_start!";
+        const char* start_msg = "[SERVER] Game_start!";
         int len = static_cast<int>(strlen(start_msg));
 
         // 플레이어들에게 start_msg 보내기
@@ -21,7 +21,6 @@ void start_game()
         }
         game_start = true;
     }
-    
 }
 // --------------------------- main부분 ---------------------------------
 int main()
@@ -109,11 +108,19 @@ int main()
     start_game();
 
     // 게임루프
-    while(game_start){
+    while (game_start)
+    {
         main_game->update();
         main_game->broadcast();
+
+        // 게임 종료 조건 체크 
+        if (main_game->end_game())
+        {
+            // 루프 종료
+            game_start = false; 
+            break;
+        }
     }
-    
     closesocket(server_sock);
     WSACleanup();
     return 0;

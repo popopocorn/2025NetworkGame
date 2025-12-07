@@ -6,7 +6,7 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
-	players[info.id].hp = 100.0f;
+	players[info.id].hp = 1000.0f;
 }
 
 void game_manager::handle_collision()
@@ -24,23 +24,28 @@ void game_manager::handle_collision()
 			if (p.id < 0)
 				continue;
 
+			if (p.id == s.owner_id)
+				continue;   // ★ 자기 스킬은 판정 제외
+
 			aabb player_bb;
-			player_bb.min_x = p.loc.x - 25.0f;
-			player_bb.max_x = p.loc.x + 25.0f;
-			player_bb.min_y = p.loc.y - 50.0f;
-			player_bb.max_y = p.loc.y + 50.0f;
+			player_bb.min_x = p.loc.x - 20.0f;
+			player_bb.max_x = p.loc.x + 10.0f;
+			player_bb.min_y = p.loc.y - 35.0f;
+			player_bb.max_y = p.loc.y + 30.0f;
 
 			if (::intersects(skill_bb, player_bb))
 			{
 				p.hp -= s.attack_power;
-				if (p.hp < 0.0f) p.hp = 0.0f;
+				if (p.hp < 0.0f)
+					p.hp = 0.0f;
 
-				// 한 번 맞으면 스킬 제거
+				//깎인 hp 전송
+				send_info[p.id].characters.my_char_hp = p.hp;
+
 				s.type = -1;
 				s.frame = 0;
 				break;
 			}
-			send_info[p.id].characters.my_char_hp = players[p.id].hp;
 		}
 	}
 }
@@ -60,7 +65,7 @@ void game_manager::update()
 		skill.update();
 	}
 
-	// 충돌 + HP 계산
+	// 충돌 + hp 계산
 	handle_collision();
 }
 
@@ -111,52 +116,50 @@ void game_manager::broadcast()
 
 bool game_manager::end_game()
 {
-	float end_time = game_timer.get_elapsed_time(); // 시간 3분 지나면 종료
-	int   winner_id = -1; //이긴 플레이어 아이디
+	float end_time = game_timer.get_elapsed_time();
 
-	if (end_time >= 60.0f) {  
-		float best_hp = -1.0f; // 가장 좋은 플레이어의 hp
+	//60초 지나기 전 까지 false 반환 지나면 true 
+	if (end_time < 60.0f) {
+		return false;
+	}
 
-		// 가장 상태가 좋은 플레이어가 누군지 확인
-		for (int i = 0; i < PLAYER_COUNT; ++i)
+	int winner_id = -1;
+	float best_hp = -1.0f;
+
+	// 가장 hp 높은 플레이어 찾기
+	for (int i = 0; i < PLAYER_COUNT; ++i)
+	{
+		player& p = players[i];
+		if (p.id >= 0 && p.hp > 0.0f)
 		{
-			player& p = players[i];
-			if (p.id >= 0 && p.hp > 0.0f) {
-				if (p.hp > best_hp) {
-					best_hp = p.hp;
-					winner_id = i;
-				}
+			if (p.hp > best_hp)
+			{
+				best_hp = p.hp;
+				winner_id = i;
 			}
 		}
 	}
 
-	const char* win_msg = "WIN";  
+	const char* win_msg = "WIN";
 	const char* lose_msg = "LOSE";
 
-	// 이긴 플레이어에게는 승리메시지 진 플레이어는 패배메시지 전송
-	// 연결상태 확인하고 전송? 이건 안됨
+	// 승패 메시지 전송
 	for (int i = 0; i < PLAYER_COUNT; ++i)
 	{
 		player& p = players[i];
 
-		// 접속 안된 슬롯이면 무시
-		if (p.id < 0)           continue;
+		if (p.id < 0) continue;
 		if (p.sock == INVALID_SOCKET) continue;
 
-		const char* msg = nullptr;
-
-		if (i == winner_id) {
-			msg = win_msg;
-		}
-		else {
-			msg = lose_msg;
-		}
+		// 피 상태가 제일 좋으면 win_msg 아니면 lose_msg
+		const char* msg = (i == winner_id ? win_msg : lose_msg);
 
 		int len = static_cast<int>(std::strlen(msg));
 		int ret = send(p.sock, msg, len, 0);
+
 		if (ret == SOCKET_ERROR) {
 			err_display("send(end_game msg)");
 		}
 	}
-	return true;
+	return true; 
 }

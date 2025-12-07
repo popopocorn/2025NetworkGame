@@ -43,6 +43,19 @@ DWORD WINAPI recv_thread(LPVOID arg)
 
 			// 받은 스킬 생성자 -> send_info
 			if(info.skill.skill_id > 0){
+
+				int skill_insert_offset = player_sock_info.id * SKILL_COUNT + info.skill.skill_id - 1;
+
+				skill_object& obj = main_game->skills[skill_insert_offset];
+
+				obj.loc = info.skill.loc;
+				obj.direction = info.skill.skill_direction;
+				obj.type = info.skill.skill_id;
+				obj.attack_power = info.skill.skill_ad;
+				obj.owner_id = player_sock_info.id;   // ★ 스킬 사용자의 ID 설정
+
+
+
 				for(int i = 0;i<PLAYER_COUNT-1;++i){
 					int player_offset { (player_sock_info.id + i + 1) % PLAYER_COUNT };
 					chars_skills_info& current_info{ main_game->send_info[player_offset] };
