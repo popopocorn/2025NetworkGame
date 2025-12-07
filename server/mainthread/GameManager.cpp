@@ -81,3 +81,14 @@ void game_manager::broadcast()
 	}
 
 }
+
+RECT player::get_bb() const
+{
+	RECT rc;
+	rc.left = static_cast<LONG>(loc.x - 20);
+	rc.top = static_cast<LONG>(loc.y - 35);
+	rc.right = static_cast<LONG>(loc.x + 10);
+	rc.bottom = static_cast<LONG>(loc.y + 30);
+
+	return rc;
+}

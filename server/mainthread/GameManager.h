@@ -41,13 +41,12 @@ struct player {
 	char direction			{};
 	bool jump				{};
 	bool heart				{};
-	float hp				{250};
-	RECT aabb;
+	float hp				{1000};
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
 	}
-	RECT get_bb() const { return aabb; }
+	RECT get_bb() const;
 };
 
 struct skill_object {
@@ -61,7 +60,7 @@ struct skill_object {
 	skill_object(float x, float y, char type, float attack_power)
 		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
 	void update();
-	RECT get_bb() const { return aabb; }
+	RECT get_bb();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////
 

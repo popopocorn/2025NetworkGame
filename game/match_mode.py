@@ -46,7 +46,6 @@ def update():
         # 3초 경과 시 씬 전환
         if match_timer >= 3.0:
             game_framework.change_mode(next_mode)
-
         
 
 def pause():
