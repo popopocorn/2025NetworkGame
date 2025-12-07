@@ -1,5 +1,12 @@
 #include "GameManager.h"
 
+void game_manager::start_game()
+{
+	for (auto p : players) {
+		send(p.sock, (const char*)'1', 1, 0);
+	}
+}
+
 void game_manager::add_player(const player_info& info)
 {
 	std::lock_guard<std::mutex> lock(buffer_gaurd);
@@ -19,6 +26,16 @@ void game_manager::update()
 
 	}
 }
+
+bool game_manager::intersects(const RECT& aabb1, const RECT& aabb2) const
+{
+	if (aabb1.right < aabb2.left)   return false;
+	if (aabb1.bottom < aabb2.top)    return false;
+	if (aabb1.left > aabb2.right)  return false;
+	if (aabb1.top > aabb2.bottom) return false;
+	return true;
+}
+
 
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
 void game_manager::broadcast()

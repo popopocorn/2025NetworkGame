@@ -6,13 +6,13 @@ from main_ui import Player_status
 from player import Player
 import game_world
 import game_framework
-import play_mode_2 as next_mode
 import config
 import game_data
 import main_ui
 import network
 import enemy
 from skill import *
+import threading
 
 # Game object class here
 
@@ -44,6 +44,8 @@ def handle_events():
     game_data.mmp = player.max_mp
 
 def init():
+    recv_thread = threading.Thread(target=network.client_recv_thread, daemon=True)
+    recv_thread.start()
     global player
     player = Player()
     game_world.add_object(player, 2)

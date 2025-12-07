@@ -9,11 +9,8 @@ stack = None
 # 게임 프레임워크 가동 시작시 네트워크 config 구성 및 서버와 연결
 # 필요시 다른 곳에 그대로 옮겨도 됨
 network.load_network_config(loadfile.resource_path('server.txt'))
-network.connect()
 
 # 11/15 신태양. 테스트용
-recv_thread = threading.Thread(target=network.client_recv_thread, daemon=True)
-recv_thread.start()
 
 def change_mode(mode):
     global stack
@@ -69,7 +66,8 @@ def run(start_mode):
         stack[-1].draw()
 
         frame_time = time.time() - current_time
-        frame_rate = 1.0/frame_time
+        if frame_time!= 0:
+            frame_rate = 1.0/frame_time
         current_time +=frame_time
         #print(f'Frame time:{frame_time}, frame_rate:{frame_rate}')
 

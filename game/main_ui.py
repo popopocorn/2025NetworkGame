@@ -36,3 +36,21 @@ class Player_status:
         return 0, 0, 0, 0
     def handle_collision(self, group, other):
         pass
+
+class matchUI:
+    def __init__(self):
+        self.font=load_font(config.font, 25)
+        self.sentence = "매칭 대기중..."
+    def draw(self):
+
+        self.font.draw(config.width/2 , config.height/2, self.sentence, (255, 255, 255))
+
+    def update(self):
+        pass
+
+    def handle_events(self, player_info):
+        pass
+    def get_bb(self):
+        return 0, 0, 0, 0
+    def handle_collision(self, group, other):
+        pass

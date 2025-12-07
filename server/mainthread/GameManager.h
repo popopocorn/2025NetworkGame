@@ -42,11 +42,12 @@ struct player {
 	bool jump				{};
 	bool heart				{};
 	float hp				{250};
-
+	RECT aabb;
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
 	}
+	RECT get_bb() const { return aabb; }
 };
 
 struct skill_object {
@@ -54,12 +55,13 @@ struct skill_object {
 	location loc			{};
 	char type				{};
 	float attack_power		{};
+	RECT aabb;
 
 	skill_object() {};
 	skill_object(float x, float y, char type, float attack_power)
 		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
 	void update();
-	RECT get_bb() const;
+	RECT get_bb() const { return aabb; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,6 +76,7 @@ public:
 
 	timer game_timer											{};
 
+	void start_game();
 	void add_player(const player_info& info);
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;

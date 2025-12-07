@@ -18,6 +18,7 @@ extern void err_display(int errcode);
 
 extern DWORD WINAPI recv_thread(LPVOID arg);
 
+
 namespace network {
 	inline float ntohf(const float& network_float) {
 		int temp;
@@ -38,15 +39,6 @@ namespace network {
 	}
 }
 
-#pragma pack(1)
-// 캐릭터 박스
-struct aabb
-{
-	float max_x;
-	float max_y;
-	float min_x;
-	float min_y;
-};
 
 // 캐릭터 위치
 struct location
@@ -134,14 +126,3 @@ struct player_info {
 	SOCKET sock;
 	int id;
 };
-
-#pragma pack()
-
-
-inline bool intersects(aabb a, aabb b) {
-	if (a.max_x < b.min_x) return false;
-	if (a.max_y < b.min_y) return false;
-	if (a.min_x > b.max_x) return false;
-	if (a.min_y > b.max_y) return false;
-	return true;
-}

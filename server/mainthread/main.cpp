@@ -6,7 +6,6 @@ int main()
     WSADATA wsa;
     SOCKET server_sock;
     struct sockaddr_in server_addr;
-
     // 윈속 초기화
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
@@ -81,7 +80,7 @@ int main()
 
         CloseHandle(hThread);
     }
-
+    main_game->start_game();
 
     while(1){
         main_game->update();

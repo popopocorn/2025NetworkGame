@@ -21,6 +21,8 @@ recv_buffer = Recv_buffer()
 buffer_lock = threading.Lock()
 recv_buf_lock = threading.Lock()
 
+game_start = False
+
 # 네트워크 config 파일을 불러오는 함수       # 신태양 11/06
 # 보통은 server.txt를 불러온다.
 # 형식은
@@ -73,6 +75,11 @@ def send_info():
         return -1
 
 #통신을 위한 클라이언트의 recv관련 함수 11/12강민서
+def start_game():
+    global game_start
+    game_start = bool(client_socket.recv(1)[0])
+    
+    pass
 def client_recv_thread():
     global recv_buf_lock
     recved_info = chars_skills_info()

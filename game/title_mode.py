@@ -1,6 +1,6 @@
 from pico2d import *
 import game_framework
-import play_mode as next
+import match_mode as next
 import config
 import loadfile
 
