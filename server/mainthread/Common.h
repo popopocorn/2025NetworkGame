@@ -4,12 +4,16 @@
 
 #include <iostream>
 #include <array>
+#include <queue>
 #include <print>
 #include <mutex>
 
 #define PLAYER_COUNT 3
 #define SKILL_COUNT 2
 
+struct char_skill_info;
+
+extern std::queue<std::pair<int, char_skill_info>> global_recv_queue;
 extern std::mutex buffer_gaurd;
 
 extern void err_quit(const char* msg);
@@ -39,7 +43,7 @@ namespace network {
 	}
 }
 
-
+#pragma pack(1)
 // 캐릭터 위치
 struct location
 {
@@ -126,3 +130,5 @@ struct player_info {
 	SOCKET sock;
 	int id;
 };
+
+#pragma pack()

@@ -92,11 +92,12 @@ def resume():
 
 def update_info():
     global player
-    network.recv_buf_lock.acquire()
-    buf = network.recv_buffer.update_info[:]
-    network.recv_buffer.update_info.clear()
-    network.recv_buf_lock.release()
-    for a in buf:
+    local_recv_buffer = []
+
+    with network.recv_buf_lock:
+        local_recv_buffer, network.global_recv_buffer = network.global_recv_buffer, local_recv_buffer
+
+    for a in local_recv_buffer:
         player.hp =  a.my_char_hp
         a.time_remaining
         for j in range(2):

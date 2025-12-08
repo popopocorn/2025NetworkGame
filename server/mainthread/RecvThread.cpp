@@ -6,15 +6,16 @@ DWORD WINAPI recv_thread(LPVOID arg)
 
 	delete (player_info*)arg;
 
-	char_skill_info info{};
+	std::pair<int, char_skill_info> info;
+	info.first = player_sock_info.id;
 
 	HANDLE hConsole{ GetStdHandle(STD_OUTPUT_HANDLE) };
 
 	while (true)
 	{
 		// recv_info 부분
-		int ret = recv(player_sock_info.sock, (char*)&info, sizeof(info), 0);
-
+		int ret = recv(player_sock_info.sock, (char*)&info.second, sizeof(char_skill_info), 0);
+		
 		if (ret == 0)
 		{
 			// 클라가 정상 종료
@@ -27,35 +28,11 @@ DWORD WINAPI recv_thread(LPVOID arg)
 			break;
 		}
 
-		info.ntoh();   // 네트워크 바이트 → 호스트 바이트
+		info.second.ntoh();   // 네트워크 바이트 → 호스트 바이트
+
 		{
 			std::lock_guard<std::mutex> lock(buffer_gaurd);
-			// 받은 플레이어 정보 -> player_container
-			// loc (x,y) : 8바이트
-			// state : 5바이트
-			::memcpy(&main_game->players[player_sock_info.id].loc,
-					&info.character,
-					sizeof(char_info));
-
-
-
-
-
-			// 받은 스킬 생성자 -> send_info
-			if(info.skill.skill_id > 0){
-				for(int i = 0;i<PLAYER_COUNT-1;++i){
-					int player_offset { (player_sock_info.id + i + 1) % PLAYER_COUNT };
-					chars_skills_info& current_info{ main_game->send_info[player_offset] };
-					// 0번 플레이어 : 1번, 1번, 2번, 2번
-					// 1번 플레이어 : 2번, 2번, 0번, 0번
-					// 2번 플레이어 : 0번, 0번, 1번, 1번
-
-					int skill_offset { (player_sock_info.id + PLAYER_COUNT - 1 - player_offset) % PLAYER_COUNT };
-					skill_offset *= 2;
-					skill_offset += info.skill.skill_id - 1;
-					::memcpy(&current_info.skills[+skill_offset], &info.skill, sizeof(skill_info));
-				}
-			}
+			global_recv_queue.push(info);
 		}
 		
 	}

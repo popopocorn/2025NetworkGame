@@ -70,13 +70,15 @@ public:
 	std::array<player, PLAYER_COUNT> players					{};
 	std::array<skill_object, PLAYER_COUNT * SKILL_COUNT> skills	{};
 
+	std::queue<std::pair<int, char_skill_info>>	local_recv_queue{};
 
-	std::array<chars_skills_info, PLAYER_COUNT> send_info{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
+	std::array<chars_skills_info, PLAYER_COUNT> send_info		{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
 	timer game_timer											{};
 
 	void start_game();
 	void add_player(const player_info& info);
+	void dispatch();
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;
 	void handle_collsion();

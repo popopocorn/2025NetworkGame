@@ -90,7 +90,3 @@ class Send_buffer:
     # 총 31바이트
     def packing(self):
         return self.char_info.packing() + self.skill_info.packing()
-    
-class Recv_buffer:
-    def __init__(self):
-        self.update_info = [chars_skills_info()]

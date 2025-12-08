@@ -15,9 +15,54 @@ void game_manager::add_player(const player_info& info)
 	players[info.id].sock = info.sock;
 }
 
+void game_manager::dispatch()
+{
+	{
+		std::lock_guard<std::mutex> lock(buffer_gaurd);
+
+		local_recv_queue.swap(global_recv_queue);
+	}
+
+	while (not local_recv_queue.empty()) {
+		// 받은 플레이어 정보 -> player_container
+		// loc (x,y) : 8바이트
+		// state : 5바이트
+		int& id{ local_recv_queue.front().first };
+
+		char_skill_info& info{ local_recv_queue.front().second };
+		::memcpy(&players[id].loc, &info.character,	sizeof(char_info));
+
+		// 받은 스킬 생성자 -> send_info
+		if (info.skill.skill_id > 0) {
+			for (int i = 0; i < PLAYER_COUNT - 1; ++i) {
+
+
+				int player_offset{ (id + i + 1) % PLAYER_COUNT };
+				chars_skills_info& current_info{ send_info[player_offset] };
+				// 0번 플레이어 : 1번, 1번, 2번, 2번
+				// 1번 플레이어 : 2번, 2번, 0번, 0번
+				// 2번 플레이어 : 0번, 0번, 1번, 1번
+
+				int skill_offset{ (PLAYER_COUNT + id - 1 - player_offset) % PLAYER_COUNT };
+				skill_offset *= 2;
+				skill_offset += info.skill.skill_id - 1;
+
+				::memcpy(&current_info.skills[+skill_offset], &info.skill, sizeof(skill_info));
+			}
+		}
+
+		local_recv_queue.pop();
+	}
+
+
+}
+
 void game_manager::update()
 {
-	game_timer.tick(60.0f);
+	game_timer.tick(120.0f);
+
+	dispatch();
+
 
 	std::array<player, PLAYER_COUNT> temp;
 	{
@@ -73,7 +118,6 @@ void game_manager::broadcast()
 	for (int id = 0; id < PLAYER_COUNT; ++id) {
 		send_info[id].hton();
 		send(players[id].sock, (char*)&send_info[id], sizeof(chars_skills_info), 0);
-
 		// 스킬 생성자 정보는 한번만 보낸다.
 		for (skill_info& skill : send_info[id].skills) {
 			skill.disable();

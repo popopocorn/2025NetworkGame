@@ -1,5 +1,6 @@
 #include "Common.h"
 
+std::queue<std::pair<int, char_skill_info>> global_recv_queue;
 std::mutex buffer_gaurd;
 
 // 소켓 함수 오류 출력 후 종료
