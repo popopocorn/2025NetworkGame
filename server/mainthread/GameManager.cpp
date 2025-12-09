@@ -73,6 +73,18 @@ void game_manager::update()
 		::memcpy(temp.data(), players.data(), temp.size() * sizeof(player));
 	}
 
+	// 시간 출력 업데이트
+	float t = game_timer.get_total_time();
+	static float last_print_time = 0.0f;
+
+	if (t - last_print_time >= 1.0f)
+	{
+		last_print_time = t;
+
+		printf("\rGame Time: %.0f seconds ", t);
+		fflush(stdout);
+	}
+
 	// 스킬 업데이트
 	for (skill_object& skill : skills) {
 		skill.update();
@@ -129,12 +141,16 @@ void game_manager::broadcast()
 
 bool game_manager::end_game()
 {
-	float end_time = game_timer.get_elapsed_time();
+	float end_time = game_timer.get_total_time();
 
-	//60초 지나기 전 까지 false 반환 지나면 true 
-	if (end_time < 60.0f) {
-		return false;
+	if (game_timer.get_total_time() < 60.0f)
+	{
+		return false;  
 	}
+
+	const char* draw_msg = "DRAW";
+	const char* win_msg = "WIN";
+	const char* lose_msg = "LOSE";
 
 	int winner_id = -1;
 	float best_hp = -1.0f;
@@ -153,8 +169,24 @@ bool game_manager::end_game()
 		}
 	}
 
-	const char* win_msg = "WIN";
-	const char* lose_msg = "LOSE";
+	float hp_list[PLAYER_COUNT];
+	int alive_count = 0;
+	bool is_draw = false;
+
+	// 게임이 비겼는지 검사
+	if (alive_count >= 2)
+	{
+		is_draw = true;
+		float base = hp_list[0];
+		for (int i = 1; i < alive_count; ++i)
+		{
+			if (hp_list[i] != base)
+			{
+				is_draw = false;
+				break;
+			}
+		}
+	}
 
 	// 승패 메시지 전송
 	for (int i = 0; i < PLAYER_COUNT; ++i)
@@ -164,12 +196,19 @@ bool game_manager::end_game()
 		if (p.id < 0) continue;
 		if (p.sock == INVALID_SOCKET) continue;
 
-		// 피 상태가 제일 좋으면 win_msg 아니면 lose_msg
-		const char* msg = (i == winner_id ? win_msg : lose_msg);
+		const char* msg = nullptr;
+
+		if (is_draw)
+		{
+			msg = draw_msg;
+		}
+		else
+		{
+			msg = (i == winner_id ? win_msg : lose_msg);
+		}
 
 		int len = static_cast<int>(std::strlen(msg));
 		int ret = send(p.sock, msg, len, 0);
-
 		if (ret == SOCKET_ERROR) {
 			err_display("send(end_game msg)");
 		}

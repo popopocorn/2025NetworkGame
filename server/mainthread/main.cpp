@@ -7,6 +7,8 @@ void start_game()
 {
     if (current_player_count == 3)
     {
+        main_game->game_timer.reset_total_time();
+
         const char* start_msg = "[SERVER] Game_start!";
         int len = static_cast<int>(strlen(start_msg));
 
@@ -121,6 +123,9 @@ int main()
             break;
         }
     }
+
+    main_game->end_game();
+
     closesocket(server_sock);
     WSACleanup();
     return 0;

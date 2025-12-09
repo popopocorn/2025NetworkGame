@@ -42,6 +42,8 @@ void timer::tick(float max_fps)
 	m_delta_time = elapsed_duration.count();
 
 	m_prev_time = now;
+
+	m_total_time += m_delta_time;
 }
  
 float timer::get_elapsed_time() const
@@ -60,4 +62,14 @@ float timer::get_fps() const
 		return 1.0f / m_delta_time;
 	}
 	return 0.0f;
+}
+
+float timer::get_total_time() const
+{
+	return m_total_time;
+}
+
+void timer::reset_total_time()
+{
+	m_total_time = 0.0f;
 }
