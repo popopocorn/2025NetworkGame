@@ -82,8 +82,10 @@ def start_game():
     pass
 def client_recv_thread():
     global recv_buf_lock
-    recved_info = chars_skills_info()
+
     while True:
+        recved_info = chars_skills_info()
+
         if 0 == recv_info(recved_info) :
             with recv_buf_lock:
                 global_recv_buffer.append(recved_info)

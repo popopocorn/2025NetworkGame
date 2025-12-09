@@ -39,9 +39,9 @@ void game_manager::dispatch()
 
 				int player_offset{ (id + i + 1) % PLAYER_COUNT };
 				chars_skills_info& current_info{ send_info[player_offset] };
-				// 0번 플레이어 : 1번, 1번, 2번, 2번
-				// 1번 플레이어 : 2번, 2번, 0번, 0번
-				// 2번 플레이어 : 0번, 0번, 1번, 1번
+				// 0번 플레이어 : 1번-1, 1번-2, 2번-1, 2번-2
+				// 1번 플레이어 : 2번-1, 2번-2, 0번-1, 0번-2
+				// 2번 플레이어 : 0번-1, 0번-2, 1번-1, 1번-2
 
 				int skill_offset{ (PLAYER_COUNT + id - 1 - player_offset) % PLAYER_COUNT };
 				skill_offset *= 2;
@@ -59,7 +59,7 @@ void game_manager::dispatch()
 
 void game_manager::update()
 {
-	game_timer.tick(120.0f);
+	game_timer.tick(1000.0f);
 
 	dispatch();
 
@@ -110,7 +110,7 @@ void game_manager::broadcast()
 				send_info[id].characters.others[i].jump = players[offset].jump;
 				send_info[id].characters.others[i].heart = players[offset].heart;
 			}
-			// skill 객체의 생성자는 update()에서 받아옴을 기대함
+			// skill 객체의 생성자는 dispatch()에서 받아옴을 기대함
 		}
 	}
 

@@ -97,12 +97,9 @@ def update_info():
     with network.recv_buf_lock:
         local_recv_buffer, network.global_recv_buffer = network.global_recv_buffer, local_recv_buffer
 
+    #print(len(local_recv_buffer))
+
     for a in local_recv_buffer:
-        player.hp =  a.my_char_hp
-        a.time_remaining
-        for j in range(2):
-            game_world.world[1][j].update_info(a.other_chars[j])            
-            pass
         for i in range(4):
             match a.skills[i].skill_id:
                 case 1:
@@ -111,6 +108,13 @@ def update_info():
                 case 2:
                     skill = Brandish(a.skills[i].x, a.skills[i].y, a.skills[i].skill_direction, a.skills[i].skill_ad)
                     game_world.add_object(skill, 3)
+                case _:
+                    pass
 
+    if len(local_recv_buffer):
+        player.hp = local_recv_buffer[-1].my_char_hp
+        local_recv_buffer[-1].time_remaining
+        for j in range(2):
+            game_world.world[1][j].update_info(local_recv_buffer[-1].other_chars[j])
         
     
