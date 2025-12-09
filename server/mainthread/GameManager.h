@@ -8,6 +8,7 @@
 struct chars_info {
 	float my_char_hp;								// hp : 4바이트
 	float time_remaining;							// 남은 시간 : 4바이트
+	char my_char_heart;								// 맞은 판정 : 1바이트
 	std::array<char_info, PLAYER_COUNT - 1> others; // 15*2 : 30바이트
 	void hton() {
 		my_char_hp = network::htonf(my_char_hp);
@@ -41,29 +42,38 @@ struct player {
 	char direction			{};
 	bool jump				{};
 	bool heart				{};
-	float hp				{1000};
+	float hp				{};
+	float non_hit_time      {};
+
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);
 	}
+
+	void update(float fDeltaTime);
 	RECT get_bb() const;
 };
 
 struct skill_object {
-	int frame				{};
+	float frame				{};
 	location loc			{};
-	char type				{};
+	char type				{-1};
 	float attack_power		{};
-	RECT aabb;
+    int direction           {};
+
+    int owner_id        { -1 };
 
 	skill_object() {};
-	skill_object(float x, float y, char type, float attack_power)
-		: frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }		{};
-	void update();
+	skill_object(float x, float y, char type, float attack_power, int dir)
+        : frame{}, loc{ x, y }, type{ type }, attack_power{ attack_power }, direction{ dir } {};
+
+    void update(float fDeltaTime);
 	RECT get_bb();
 };
-////////////////////////////////////////////////////////////////////////////////////////////
 
+
+    
+////////////////////////////////////////////////////////////////////////////////////////////
 class game_manager
 {
 public:
@@ -74,15 +84,14 @@ public:
 
 	std::array<chars_skills_info, PLAYER_COUNT> send_info		{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
-	timer game_timer											{};
+	timer game_timer                                            {};
 
 	void start_game();
 	void add_player(const player_info& info);
 	void dispatch();
 	void update();
 	bool intersects(const RECT& aabb1, const RECT& aabb2) const;
-	void handle_collsion();
+	void handle_collision();
 	void broadcast();
 	bool end_game();
 };
-

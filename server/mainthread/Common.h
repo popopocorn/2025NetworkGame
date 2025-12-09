@@ -11,6 +11,11 @@
 #define PLAYER_COUNT 3
 #define SKILL_COUNT 2
 
+#define SKILL_AURA_SPEED 10.0f
+#define SKILL_BRANDISH_LIFE_TIME 0.78f
+
+#define PLAYER_MAX_NON_HIT_TIME 1.0f
+
 struct char_skill_info;
 
 extern std::queue<std::pair<int, char_skill_info>> global_recv_queue;

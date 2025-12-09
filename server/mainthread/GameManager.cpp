@@ -13,6 +13,47 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
+	players[info.id].hp = 1000.0f;
+	players[info.id].heart = false;
+}
+
+void game_manager::handle_collision()
+{
+	for (skill_object& s : skills)
+	{
+		if (s.type < 0)  
+			continue;
+
+		// 스킬의 AABB
+		RECT skill_bb = s.get_bb();
+
+		for (player& p : players)
+		{
+			if (p.id < 0) { continue; }
+
+			if (p.id == s.owner_id) { continue; }   // 자기 스킬은 판정 제외
+
+			RECT player_bb = p.get_bb();
+
+			if (intersects(skill_bb, player_bb))
+			{
+				std::print("Player{:02} collieds Skill{:02} owned by Player{:02}\n", p.id, static_cast<int>(s.type), s.owner_id);
+				std::print("collision info : Player{:02} - LT : ({}, {}), RB : ({}, {}) / Skill{:02} - LT : ({}, {}), RB : ({}, {})\n",
+					p.id, player_bb.left, player_bb.top, player_bb.right, player_bb.bottom,
+					static_cast<int>(s.type), skill_bb.left, skill_bb.top, skill_bb.right, skill_bb.bottom);
+
+				p.hp -= s.attack_power;
+				if (p.hp < 0.0f)
+					p.hp = 0.0f;
+
+				s.type = -1;
+				s.frame = 0;
+
+				p.heart = true;
+				break;
+			}
+		}
+	}
 }
 
 void game_manager::dispatch()
@@ -30,12 +71,32 @@ void game_manager::dispatch()
 		int& id{ local_recv_queue.front().first };
 
 		char_skill_info& info{ local_recv_queue.front().second };
-		::memcpy(&players[id].loc, &info.character,	sizeof(char_info));
+		players[id].loc = info.character.loc;
+		::memcpy(&players[id].state, &info.character.state,	sizeof(char_info::state));
+		players[id].direction = info.character.direction;
+		players[id].jump = info.character.jump;
 
 		// 받은 스킬 생성자 -> send_info
 		if (info.skill.skill_id > 0) {
-			for (int i = 0; i < PLAYER_COUNT - 1; ++i) {
 
+			int skill_insert_offset = id * SKILL_COUNT + info.skill.skill_id - 1;
+
+			skill_object& obj = skills[skill_insert_offset];
+
+			obj.loc = info.skill.loc;
+			if ('r' == info.skill.skill_direction) {
+				obj.direction = 1;     // 오른쪽
+			}
+			else {
+				obj.direction = -1;    // 왼쪽
+			}
+
+			obj.type = info.skill.skill_id;
+			obj.attack_power = info.skill.skill_ad;
+			obj.owner_id = id;
+
+
+			for (int i = 0; i < PLAYER_COUNT - 1; ++i) {
 
 				int player_offset{ (id + i + 1) % PLAYER_COUNT };
 				chars_skills_info& current_info{ send_info[player_offset] };
@@ -62,25 +123,29 @@ void game_manager::update()
 	game_timer.tick(1000.0f);
 
 	dispatch();
-
-
-	std::array<player, PLAYER_COUNT> temp;
-	{
-		std::lock_guard<std::mutex> buffer_lock(buffer_gaurd);
-		::memcpy(temp.data(), players.data(), temp.size() * sizeof(player));
-
+	
+	// 스킬 업데이트
+	for (skill_object& skill : skills) {
+		skill.update(game_timer.get_delta_time());
 	}
+
+	// 플레이어 업데이트
+	for (player& p : players) {
+		p.update(game_timer.get_delta_time());
+	}
+
+	// 충돌 + hp 계산
+	handle_collision();
 }
 
-bool game_manager::intersects(const RECT& aabb1, const RECT& aabb2) const
+bool game_manager::intersects(const RECT& a, const RECT& b) const
 {
-	if (aabb1.right < aabb2.left)   return false;
-	if (aabb1.bottom < aabb2.top)    return false;
-	if (aabb1.left > aabb2.right)  return false;
-	if (aabb1.top > aabb2.bottom) return false;
+	if (a.right < b.left)   return false;
+	if (a.left > b.right)   return false; 
+	if (a.bottom < b.top)   return false;
+	if (a.top > b.bottom)   return false; 
 	return true;
 }
-
 
 // 모든 플레이어한테 정보를 보내는 함수										// 신태양 11/13
 void game_manager::broadcast()
@@ -97,6 +162,9 @@ void game_manager::broadcast()
 			// 남은 시간. 추후 Timer 작성 후, 수정 필요
 			send_info[id].characters.time_remaining = 15.57f;
 
+			// 피격
+			send_info[id].characters.my_char_heart = players[id].heart;
+
 			for (int i = 0; i < PLAYER_COUNT - 1; ++i) {
 				// 0번 플레이어 : 1번, 2번
 				// 1번 플레이어 : 2번, 0번
@@ -111,6 +179,7 @@ void game_manager::broadcast()
 				send_info[id].characters.others[i].heart = players[offset].heart;
 			}
 			// skill 객체의 생성자는 dispatch()에서 받아옴을 기대함
+
 		}
 	}
 
@@ -126,6 +195,18 @@ void game_manager::broadcast()
 
 }
 
+void player::update(float fDeltaTime)
+{
+	if (heart) {
+		non_hit_time += fDeltaTime;
+
+		if (non_hit_time >= PLAYER_MAX_NON_HIT_TIME) {
+			non_hit_time = 0.f;
+			heart = false;
+		}
+	}
+}
+
 RECT player::get_bb() const
 {
 	RECT rc;
@@ -133,6 +214,138 @@ RECT player::get_bb() const
 	rc.top = static_cast<LONG>(loc.y - 35);
 	rc.right = static_cast<LONG>(loc.x + 10);
 	rc.bottom = static_cast<LONG>(loc.y + 30);
-
 	return rc;
 }
+
+bool game_manager::end_game()
+{
+	float end_time = game_timer.get_elapsed_time();
+
+	//60초 지나기 전 까지 false 반환 지나면 true 
+	if (end_time < 60.0f) {
+		return false;
+	}
+
+	int winner_id = -1;
+	float best_hp = -1.0f;
+
+	// 가장 hp 높은 플레이어 찾기
+	for (int i = 0; i < PLAYER_COUNT; ++i)
+	{
+		player& p = players[i];
+		if (p.id >= 0 && p.hp > 0.0f)
+		{
+			if (p.hp > best_hp)
+			{
+				best_hp = p.hp;
+				winner_id = i;
+			}
+		}
+	}
+
+	const char* win_msg = "WIN";
+	const char* lose_msg = "LOSE";
+
+	// 승패 메시지 전송
+	for (int i = 0; i < PLAYER_COUNT; ++i)
+	{
+		player& p = players[i];
+
+		if (p.id < 0) continue;
+		if (p.sock == INVALID_SOCKET) continue;
+
+		// 피 상태가 제일 좋으면 win_msg 아니면 lose_msg
+		const char* msg = (i == winner_id ? win_msg : lose_msg);
+
+		int len = static_cast<int>(std::strlen(msg));
+		int ret = send(p.sock, msg, len, 0);
+
+		if (ret == SOCKET_ERROR) {
+			err_display("send(end_game msg)");
+		}
+	}
+	return true;
+}
+
+void skill_object::update(float fDeltaTime)
+{
+	frame += fDeltaTime;
+
+	switch (type) {
+	case 1:	// Aura 화면 벗어나면 사라짐
+		{
+			loc.x += direction * SKILL_AURA_SPEED * 100 * fDeltaTime;
+
+			if (loc.x > 1500.0f || loc.x < 0.0f) {
+				type = -1;
+				frame = 0.f;
+				return;
+			}
+		}
+
+		break;
+
+	case 2:
+		{
+			if (frame >= SKILL_BRANDISH_LIFE_TIME)
+			{
+				type = -1;
+				frame = 0.f;
+				return;
+			}
+		}
+		break;
+	}
+}
+
+RECT skill_object::get_bb()
+{
+	RECT box{};
+
+	if (type < 0) {
+		box.left = box.right = box.top = box.bottom = 0;
+		return box;
+	}
+
+	switch (type)
+	{
+	case 0: // Aura_blade 
+		box.left = static_cast<LONG>(loc.x - 20.0f);
+		box.right = static_cast<LONG>(loc.x + 20.0f);
+		box.top = static_cast<LONG>(loc.y - 20.0f);
+		box.bottom = static_cast<LONG>(loc.y + 20.0f);
+		break;
+
+	case 1: // Aura 
+		if (direction == 1) {  // 오른쪽 공격
+			box.left = static_cast<LONG>(loc.x);
+			box.right = static_cast<LONG>(loc.x + 150.0f);
+		}
+		else {                 // 왼쪽 공격
+			box.left = static_cast<LONG>(loc.x - 150.0f);
+			box.right = static_cast<LONG>(loc.x);
+		}
+		box.top = static_cast<LONG>(loc.y - 50.0f);
+		box.bottom = static_cast<LONG>(loc.y + 50.0f);
+		break;
+
+	case 2: // Brandish
+		if (direction == 1) {
+			box.left = static_cast<LONG>(loc.x);
+			box.right = static_cast<LONG>(loc.x + 120.0f);
+		}
+		else {
+			box.left = static_cast<LONG>(loc.x - 130.0f);
+			box.right = static_cast<LONG>(loc.x);
+		}
+		box.top = static_cast<LONG>(loc.y - 70.0f);
+		box.bottom = static_cast<LONG>(loc.y + 100.0f);
+		break;
+
+	default:
+		box.left = box.right = box.top = box.bottom = 0;
+		break;
+	}
+	return box;
+}
+

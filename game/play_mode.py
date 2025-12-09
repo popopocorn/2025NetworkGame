@@ -97,7 +97,7 @@ def update_info():
     with network.recv_buf_lock:
         local_recv_buffer, network.global_recv_buffer = network.global_recv_buffer, local_recv_buffer
 
-    #print(len(local_recv_buffer))
+
 
     for a in local_recv_buffer:
         for i in range(4):
@@ -113,6 +113,8 @@ def update_info():
 
     if len(local_recv_buffer):
         player.hp = local_recv_buffer[-1].my_char_hp
+        player.player_heart = local_recv_buffer[-1].heart
+
         local_recv_buffer[-1].time_remaining
         for j in range(2):
             game_world.world[1][j].update_info(local_recv_buffer[-1].other_chars[j])

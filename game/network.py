@@ -93,12 +93,13 @@ def client_recv_thread():
 def recv_info(recved_info):
     global client_socket, recv_buffer
     try:
-        data = client_socket.recv(108)
-        vals = struct.unpack('!ffff5s1s??ff5s1s??iff1sfiff1sfiff1sfiff1sf', data)
+        data = client_socket.recv(109)
+        vals = struct.unpack('!ffBff5s1s??ff5s1s??iff1sfiff1sfiff1sfiff1sf', data)
 
         idx = 0
         recved_info.my_char_hp = vals[idx]; idx += 1
         recved_info.time_remaining = vals[idx]; idx += 1
+        recved_info.heart = bool(vals[idx]); idx += 1
 
         recved_info.other_chars[0].x = vals[idx]; idx += 1
         recved_info.other_chars[0].y = vals[idx]; idx += 1
@@ -120,6 +121,6 @@ def recv_info(recved_info):
             recved_info.skills[i].y = vals[idx]; idx += 1
             recved_info.skills[i].skill_direction = vals[idx].decode(); idx += 1
             recved_info.skills[i].skill_ad = vals[idx]; idx += 1
-        return 0                                  
+        return 0
     except:
         return -1

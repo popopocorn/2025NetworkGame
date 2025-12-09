@@ -74,6 +74,7 @@ class chars_skills_info:
         self.my_char_hp=0.0
         self.other_chars=[char_info(), char_info()]
         self.time_remaining=0.0
+        self.heart = False
         self.skills = [skill_info() for _ in range(4)]
 
     def display(self):
