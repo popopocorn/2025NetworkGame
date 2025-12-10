@@ -1,3 +1,5 @@
+from unittest.mock import sentinel
+
 from pico2d import *
 import config
 import game_data
@@ -47,6 +49,44 @@ class matchUI:
 
     def update(self):
         pass
+
+    def handle_events(self, player_info):
+        pass
+    def get_bb(self):
+        return 0, 0, 0, 0
+    def handle_collision(self, group, other):
+        pass
+
+
+
+class RemainingTimeUI:
+    def __init__(self):
+        self.font=load_font(config.font, 25)
+        self.sentence = str()
+    def draw(self):
+        color = (255, 255, 255)
+        if game_data.remaining_time < 11.0:
+            color = (255, 0, 0)
+
+
+        self.font.draw(config.width / 2 + config.width / 8, 30, self.sentence, color)
+
+    def update(self):
+        self.sentence = str()
+        min = int(game_data.remaining_time) // 60
+        sec = int(game_data.remaining_time) % 60
+        if min > 10:
+            self.sentence += str(min)
+        else:
+            self.sentence += '0'
+            self.sentence += str(min)
+        self.sentence += ':'
+        if sec > 10:
+            self.sentence += str(sec)
+        else:
+            self.sentence += '0'
+            self.sentence += str(sec)
+
 
     def handle_events(self, player_info):
         pass

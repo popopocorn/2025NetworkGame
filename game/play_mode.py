@@ -2,7 +2,8 @@ from pico2d import *
 import random
 
 from background import *
-from main_ui import Player_status
+from game_data import remaining_time
+from main_ui import Player_status, RemainingTimeUI
 from player import Player
 import game_world
 import game_framework
@@ -60,6 +61,8 @@ def init():
         game_world.add_collision_pair("player:platform", None, platform)
     ui=Player_status()
     game_world.add_object(ui, 4)
+    timeui = RemainingTimeUI()
+    game_world.add_object(timeui, 4)
     e = enemy.Enemy(100)
     game_world.add_object(e, 1)
     e1 = enemy.Enemy()
@@ -115,7 +118,11 @@ def update_info():
         player.hp = local_recv_buffer[-1].my_char_hp
         player.player_heart = local_recv_buffer[-1].heart
 
-        local_recv_buffer[-1].time_remaining
+        if local_recv_buffer[-1].time_remaining > 0:
+            game_data.remaining_time = local_recv_buffer[-1].time_remaining
+        else:
+            game_data.remaining_time = 0
+
         for j in range(2):
             game_world.world[1][j].update_info(local_recv_buffer[-1].other_chars[j])
         

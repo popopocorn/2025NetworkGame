@@ -12,6 +12,11 @@ timer::~timer()
 	timeEndPeriod(m_timecaps.wPeriodMin);
 }
 
+void timer::restore()
+{
+	m_prev_time = std::chrono::steady_clock::now();
+}
+
 void timer::tick(float max_fps)
 {
 	std::chrono::steady_clock::time_point now{ std::chrono::steady_clock::now() };

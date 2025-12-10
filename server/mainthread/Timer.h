@@ -15,6 +15,7 @@ public:
 	timer();
 	~timer();
 
+	void restore();
 	void tick(float max_fps = 0.0f);
 	float get_elapsed_time() const;
 	float get_delta_time() const;

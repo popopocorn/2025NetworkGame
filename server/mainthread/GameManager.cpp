@@ -5,6 +5,8 @@ void game_manager::start_game()
 	for (auto p : players) {
 		send(p.sock, (const char*)'1', 1, 0);
 	}
+	game_timer.restore();
+	time_remaining = 183.0f;
 }
 
 void game_manager::add_player(const player_info& info)
@@ -30,24 +32,21 @@ void game_manager::handle_collision()
 		for (player& p : players)
 		{
 			if (p.id < 0) { continue; }
-
+			if (p.heart) { continue; }
 			if (p.id == s.owner_id) { continue; }   // 자기 스킬은 판정 제외
 
 			RECT player_bb = p.get_bb();
 
 			if (intersects(skill_bb, player_bb))
 			{
-				std::print("Player{:02} collieds Skill{:02} owned by Player{:02}\n", p.id, static_cast<int>(s.type), s.owner_id);
-				std::print("collision info : Player{:02} - LT : ({}, {}), RB : ({}, {}) / Skill{:02} - LT : ({}, {}), RB : ({}, {})\n",
+				std::print("Player{:03} collieds Skill{:03}(owned by Player{:03})\n", p.id, static_cast<int>(s.type), s.owner_id);
+				std::print("collision info : Player{:03} - LT : ({}, {}), RB : ({}, {}) / Skill{:03} - LT : ({}, {}), RB : ({}, {})\n",
 					p.id, player_bb.left, player_bb.top, player_bb.right, player_bb.bottom,
 					static_cast<int>(s.type), skill_bb.left, skill_bb.top, skill_bb.right, skill_bb.bottom);
 
 				p.hp -= s.attack_power;
 				if (p.hp < 0.0f)
 					p.hp = 0.0f;
-
-				s.type = -1;
-				s.frame = 0;
 
 				p.heart = true;
 				break;
@@ -121,6 +120,7 @@ void game_manager::dispatch()
 void game_manager::update()
 {
 	game_timer.tick(1000.0f);
+	time_remaining -= game_timer.get_delta_time();
 
 	dispatch();
 	
@@ -160,7 +160,7 @@ void game_manager::broadcast()
 			send_info[id].characters.my_char_hp = players[id].hp;
 
 			// 남은 시간. 추후 Timer 작성 후, 수정 필요
-			send_info[id].characters.time_remaining = 15.57f;
+			send_info[id].characters.time_remaining = time_remaining;
 
 			// 피격
 			send_info[id].characters.my_char_heart = players[id].heart;
@@ -318,12 +318,12 @@ RECT skill_object::get_bb()
 
 	case 1: // Aura 
 		if (direction == 1) {  // 오른쪽 공격
-			box.left = static_cast<LONG>(loc.x);
-			box.right = static_cast<LONG>(loc.x + 150.0f);
+			box.left = static_cast<LONG>(loc.x - 40.f);
+			box.right = static_cast<LONG>(loc.x + 40.f);
 		}
 		else {                 // 왼쪽 공격
-			box.left = static_cast<LONG>(loc.x - 150.0f);
-			box.right = static_cast<LONG>(loc.x);
+			box.left = static_cast<LONG>(loc.x - 40.f);
+			box.right = static_cast<LONG>(loc.x + 40.f);
 		}
 		box.top = static_cast<LONG>(loc.y - 50.0f);
 		box.bottom = static_cast<LONG>(loc.y + 50.0f);
