@@ -104,13 +104,13 @@ int main()
     }
     main_game->start_game();
 
-
     // 게임시작
     start_game();
-
+    main_game->game_timer.reset_total_time();
     // 게임루프
     while (game_start)
     {
+       
         main_game->update();
         main_game->broadcast();
 
