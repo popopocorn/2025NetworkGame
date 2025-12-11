@@ -45,7 +45,7 @@ struct player {
 	float hp				{};
 	float non_hit_time      {};
 	int score				{};
-
+	bool dead				{};
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
 		std::print("\r[update] ID : {} === Char : (x, y) = ({}, {}), State = {}\t\t\t\n", id, loc.x, loc.y, state);

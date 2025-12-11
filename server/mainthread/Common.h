@@ -18,7 +18,7 @@
 #define INIT_GAME_TIME 183.f
 
 #define PLAYER_MAX_NON_HIT_TIME 1.f
-#define PLAYER_MAX_DEAD_TIME 10.f
+#define PLAYER_MAX_DEAD_TIME 5.f
 
 struct char_skill_info;
 

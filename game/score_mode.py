@@ -29,6 +29,9 @@ def update():
     game_world.update()
     game_world.handle_collisions()
 
+def send_info():
+    pass
+
 def pause():
     pass
 

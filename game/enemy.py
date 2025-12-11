@@ -24,6 +24,7 @@ class Walk:
     @staticmethod
     def enter(enemy):
         enemy.frame = 0
+        
     @staticmethod
     def exit(enemy):
         pass
@@ -97,7 +98,6 @@ class Dead:
     @staticmethod
     def enter(enemy):
         enemy.frame = 0
-
     @staticmethod
     def exit(enemy):
         pass
