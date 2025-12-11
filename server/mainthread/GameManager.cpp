@@ -7,8 +7,8 @@ void game_manager::start_game()
 		send(p.sock, &start_message, 1, 0);
 	}
 	game_timer.restore();
-	time_remaining = 30.0f; // 테스트용
-	//time_remaining = INIT_GAME_TIME;
+	//time_remaining = 30.0f; // 테스트용
+	time_remaining = INIT_GAME_TIME;
 	
 	SetEvent(start_event);
 

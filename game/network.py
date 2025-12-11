@@ -66,6 +66,17 @@ def closesocket():
     client_socket.shutdown(socket.SHUT_RDWR)
     client_socket.close()
 
+def recvall(sock, length):
+    data = b''
+    while len(data) < length:
+        packet = sock.recv(length - len(data))
+
+        if not packet:
+            return None
+        data += packet
+
+    return data
+
 # send_buffer에 들어 있는 값을 보낸다.        # 신태양 11/06
 # 성공시 0, 실패시 -1 리턴
 def send_info():
@@ -83,14 +94,15 @@ def send_info():
 
 #통신을 위한 클라이언트의 recv관련 함수 11/12강민서
 def start_game():
-    global game_start
-    game_start = bool(client_socket.recv(1)[0])
+    global game_start, client_socket
+    game_start = bool(recvall(client_socket, 1)[0])
+
     
 
 def end_game():
-    global game_score
+    global game_score, client_socket
     try:
-        data = client_socket.recv(12)
+        data = recvall(client_socket,12)
         game_score = struct.unpack('!iii', data)
         return 0
     except:
@@ -116,7 +128,11 @@ def client_recv_thread():
 def recv_info(recved_info):
     global client_socket, recv_buffer, game_start
     try:
-        data = client_socket.recv(109)
+        data = recvall(client_socket, 109)
+
+        if None == data:
+            return -2
+
         vals = struct.unpack('!ffBff5s1s??ff5s1s??iff1sfiff1sfiff1sfiff1sf', data)
 
         idx = 0

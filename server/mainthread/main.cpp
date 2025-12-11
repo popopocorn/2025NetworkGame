@@ -103,8 +103,9 @@ void game_roop()
     {
         main_game->dispatch();
         main_game->update();
-        main_game->broadcast();
         main_game->handle_collision();
+        main_game->broadcast();
+        
 
         // 게임 종료 조건 체크 
         if (main_game->end_game())
