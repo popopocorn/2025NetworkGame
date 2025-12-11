@@ -27,6 +27,7 @@ def init():
 
 def draw():
     clear_canvas()
+    
     game_world.render()
     update_canvas()
 

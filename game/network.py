@@ -22,6 +22,7 @@ buffer_lock = threading.Lock()
 recv_buf_lock = threading.Lock()
 
 game_start = False
+game_score = [0, 0, 0]
 
 # 네트워크 config 파일을 불러오는 함수       # 신태양 11/06
 # 보통은 server.txt를 불러온다.
@@ -81,7 +82,12 @@ def start_game():
     
 
 def end_game():
-    pass
+    try:
+        data = client_socket.recv(12)
+        scores = struct.unpack('!iii', data)
+        return 0
+    except:
+        return -1
 
 def client_recv_thread():
     global recv_buf_lock
@@ -92,8 +98,13 @@ def client_recv_thread():
         if 0 == recv_info(recved_info) :
             with recv_buf_lock:
                 global_recv_buffer.append(recved_info)
+        else:
+            print("recv()실패")
 
-    end_game()
+    if 0 == end_game():
+        pass
+    else:
+        print("점수 송신 실패")
 
 def recv_info(recved_info):
     global client_socket, recv_buffer
