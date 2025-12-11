@@ -129,7 +129,7 @@ def recv_info(recved_info):
     global client_socket, recv_buffer, game_start
     try:
         data = recvall(client_socket, 109)
-
+        #data = client_socket.recv(109)
         if None == data:
             return -2
 

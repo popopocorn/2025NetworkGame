@@ -44,3 +44,18 @@ void err_display(int errcode)
 	LocalFree(lpMsgBuf);
 }
 
+int send_all(SOCKET sock, const char* data, int len)
+{
+	int total_sent = 0;
+
+	while (total_sent < len)
+	{
+		int sent = send(sock, data + total_sent, len - total_sent, 0);
+		if (sent <= 0)
+			return sent;
+
+		total_sent += sent;
+	}
+
+	return total_sent;
+}
