@@ -44,7 +44,8 @@ class matchUI:
     def draw(self):
 
         self.font.draw(config.width/2 , config.height/2, self.sentence, (255, 255, 255))
-
+    def setText(self, text):
+        self.sentence = text
     def update(self):
         pass
 
