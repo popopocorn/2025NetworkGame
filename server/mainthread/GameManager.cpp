@@ -7,7 +7,7 @@ void game_manager::start_game()
 		send(p.sock, &start_message, 1, 0);
 	}
 	game_timer.restore();
-	time_remaining = 15.0f; // 테스트용
+	time_remaining = 60.0f; // 테스트용
 	//time_remaining = INIT_GAME_TIME;
 	
 	SetEvent(start_event);
@@ -61,6 +61,7 @@ void game_manager::handle_collision()
 					std::print("[GAME] Player{:03} is dead\n[GAME] Player{:03}'s Score : {} + 1 = {}\n",p.id, s.owner_id, score, score + 1);
 					++players[s.owner_id].score;
 					p.non_hit_time = PLAYER_MAX_DEAD_TIME;
+					p.dead = true;
 				}
 				else {
 					p.non_hit_time = PLAYER_MAX_NON_HIT_TIME;
@@ -216,12 +217,20 @@ void player::update(float fDeltaTime)
 		non_hit_time -= fDeltaTime;
 
 		if (non_hit_time <= 0.f) {
+			if (dead) {
+				dead = not dead;
+				hp = 1000;
+			}
 			heart = false;
+			
 
 			if (hp <= 0.0f) {
 				hp = INIT_HP;
 			}
 		}
+	}
+	if (dead) {
+
 	}
 }
 

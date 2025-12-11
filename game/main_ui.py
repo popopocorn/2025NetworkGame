@@ -4,6 +4,7 @@ from pico2d import *
 import config
 import game_data
 import loadfile
+import network
 
 class Player_status:
     def __init__(self):
@@ -42,11 +43,13 @@ class Player_status:
 class matchUI:
     def __init__(self):
         self.font=load_font(config.font, 25)
+        self.image = load_image(loadfile.resource_path("back1.png"))
         self.sentence = "매칭 대기중..."
     def draw(self):
-
-        self.font.draw(config.width/2 , config.height/2, self.sentence, (255, 255, 255))
-
+        self.image.draw(config.width/2, config.height/2)
+        self.font.draw(config.width/2 - 100 , config.height/2, self.sentence, (255, 255, 255))
+    def setText(self, text):
+        self.sentence = text
     def update(self):
         pass
 
@@ -56,6 +59,34 @@ class matchUI:
         return 0, 0, 0, 0
     def handle_collision(self, group, other):
         pass
+
+class scoreUI:
+    def __init__(self):
+        self.font=load_font(config.font, 25)
+        self.image = load_image(loadfile.resource_path("back1.png"))
+        scores = network.game_score
+
+        self.scores =[f"내 점수:         {scores[0]}",
+        f"플레이어 1 점수:  {scores[1]}",
+        f"플레이어 2 점수:  {scores[2]}"]
+
+    def draw(self):
+        self.image.draw(config.width/2, config.height/2)
+        for i in range(3):
+            self.font.draw(config.width/2- 100 , config.height/2 - i*10, self.scores[i], (255, 255, 255))
+
+    def setText(self, text):
+        self.sentence = text
+    def update(self):
+        pass
+
+    def handle_events(self, player_info):
+        pass
+    def get_bb(self):
+        return 0, 0, 0, 0
+    def handle_collision(self, group, other):
+        pass
+
 
 
 

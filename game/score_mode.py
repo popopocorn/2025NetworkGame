@@ -8,6 +8,7 @@ import play_mode as next_mode
 import config
 import game_data
 import network
+import main_ui
 
 
 def handle_events():
@@ -15,7 +16,10 @@ def handle_events():
    
 
 def init():
-    pass
+    global ui
+    network.connect()
+    ui = main_ui.scoreUI()
+    game_world.add_object(ui, 4)
 
 def draw():
     clear_canvas()
@@ -28,6 +32,9 @@ def finish():
 def update():
     game_world.update()
     game_world.handle_collisions()
+
+def send_info():
+    pass
 
 def pause():
     pass

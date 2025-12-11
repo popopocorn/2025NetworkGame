@@ -14,6 +14,7 @@ import network
 import enemy
 from skill import *
 import threading
+import score_mode as next_mode
 
 # Game object class here
 
@@ -81,6 +82,8 @@ def update():
     game_world.update()
     game_world.handle_collisions()
     update_info()
+    if network.game_start == False:
+        game_framework.change_mode(next_mode)
 
 
 def send_info():        # 신태양 11/06
@@ -99,9 +102,11 @@ def update_info():
 
     with network.recv_buf_lock:
         local_recv_buffer, network.global_recv_buffer = network.global_recv_buffer, local_recv_buffer
+    if len(local_recv_buffer) == 0:
+        return
 
-
-
+    if local_recv_buffer[-1].time_remaining <=0:
+        network.game_start = False
     for a in local_recv_buffer:
         for i in range(4):
             match a.skills[i].skill_id:
@@ -122,9 +127,10 @@ def update_info():
             game_data.remaining_time = local_recv_buffer[-1].time_remaining
         else:
             game_data.remaining_time = 0
-            network.closesocket()
+            network.game_start=False
+            
 
         for j in range(2):
             game_world.world[1][j].update_info(local_recv_buffer[-1].other_chars[j])
-        
+    
     
