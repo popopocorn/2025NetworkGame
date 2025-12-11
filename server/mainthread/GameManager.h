@@ -98,3 +98,4 @@ public:
 	void broadcast();
 	bool end_game();
 };
+
