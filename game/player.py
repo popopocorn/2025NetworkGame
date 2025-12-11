@@ -213,7 +213,6 @@ class Wait:
 class Dead:
     @staticmethod
     def enter(player, e):
-        player.start_time = get_time()
         player.frame = 0
 
     def exit(self):
@@ -221,7 +220,7 @@ class Dead:
 
     @staticmethod
     def do(player):
-        if get_time() - player.start_time > 3:
+        if player.hp != 0:
             player.state_machine.add_event(('TIME_OUT', 0))
 
     @staticmethod
