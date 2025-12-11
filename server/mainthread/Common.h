@@ -33,6 +33,7 @@ extern void err_display(int errcode);
 
 extern DWORD WINAPI recv_thread(LPVOID arg);
 
+extern int send_all(SOCKET sock, const char* data, int len);
 
 namespace network {
 	inline float ntohf(const float& network_float) {
