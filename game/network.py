@@ -112,7 +112,7 @@ def client_recv_thread():
     if 0 == end_game():
         pass
     else:
-        print("점수 송신 실패")
+        print("점수 수신 실패")
 
 def recv_info(recved_info):
     global client_socket, recv_buffer, game_start

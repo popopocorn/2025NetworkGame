@@ -127,7 +127,7 @@ def update_info():
             game_data.remaining_time = local_recv_buffer[-1].time_remaining
         else:
             game_data.remaining_time = 0
-            network.game_start=False
+            
             
 
         for j in range(2):
