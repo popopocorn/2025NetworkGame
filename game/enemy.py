@@ -24,7 +24,8 @@ class Walk:
     @staticmethod
     def enter(enemy):
         enemy.frame = 0
-    def exit(self):
+    @staticmethod
+    def exit(enemy):
         pass
     @staticmethod
     def do(enemy):
@@ -60,7 +61,8 @@ class Idle:
     def enter(enemy):
         enemy.frame = 0
 
-    def exit(self):
+    @staticmethod
+    def exit(enemy):
         pass
 
     @staticmethod
@@ -90,7 +92,45 @@ class Idle:
     @staticmethod
     def get_name():
         return "Idle\0"
-    
+
+class Dead:
+    @staticmethod
+    def enter(enemy):
+        enemy.frame = 0
+
+    @staticmethod
+    def exit(enemy):
+        pass
+
+
+    @staticmethod
+    def do(enemy):
+        if enemy.enemy_heart:
+            enemy.idle_motion[int(enemy.frame)].opacify(10000 * game_framework.frame_time % 2)
+            enemy.jump_motion.opacify(10000 * game_framework.frame_time % 2)
+        else:
+            enemy.idle_motion[int(enemy.frame)].opacify(1)
+            enemy.jump_motion.opacify(1)
+        enemy.frame = (enemy.frame + FRAMES_PER_ACTION[1]*ACTION_PER_TIME[1] * game_framework.frame_time)%FRAMES_PER_ACTION[1]
+
+    @staticmethod
+    def draw(enemy):
+        if not enemy.enemy_jump:
+            if enemy.direction == 'r':
+                enemy.idle_motion[int(enemy.frame)].composite_draw(0, 'h', enemy.enemy_x + 10, enemy.enemy_y)
+            else:
+                enemy.idle_motion[int(enemy.frame)].draw(enemy.enemy_x - 20, enemy.enemy_y)
+        else:
+            if enemy.direction == 'r':
+                enemy.jump_motion.composite_draw(0, 'h', enemy.enemy_x - 15, enemy.enemy_y + 5)
+            else:
+                enemy.jump_motion.draw(enemy.enemy_x + 15, enemy.enemy_y + 5)
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Dead\0"
+
 class Brds:
     @staticmethod
     def enter(enemy):
@@ -98,7 +138,8 @@ class Brds:
         # 스킬 상태에 도입하면 send_buffer의 skill_info를 채운다.         # 신태양 11/06
         # 그럼 위에 add_object는 지워야 할 듯
 
-    def exit(self):
+    @staticmethod
+    def exit(enemy):
         pass
     @staticmethod
     def do(enemy):
@@ -122,7 +163,8 @@ class Aura:
     def enter(enemy):
         enemy.frame=0
 
-    def exit(self):
+    @staticmethod
+    def exit(enemy):
         pass
     @staticmethod
     def do(enemy):
@@ -146,7 +188,8 @@ class Wait:
 
         enemy.frame = 0
 
-    def exit(self):
+    @staticmethod
+    def exit(enemy):
         pass
 
     @staticmethod
@@ -203,6 +246,7 @@ class Dead:
 STATE_MAP ={
     "Idle\0": Idle,
     "Walk\0": Walk,
+    "Dead\0": Dead,
     "Brds\0": Brds,
     "Aura\0": Aura,
     "Wait\0": Wait,

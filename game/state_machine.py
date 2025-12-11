@@ -32,7 +32,11 @@ def is_dead(e):
     if e[0] == "DEAD": return True
     return False
 
+def dead(e):
+    return e[0] == 'DEAD'
 
+def revive(e):
+    return e[0] == 'REVIVE'
 
 
 

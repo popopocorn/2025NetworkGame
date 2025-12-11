@@ -44,6 +44,7 @@ struct player {
 	bool heart				{};
 	float hp				{};
 	float non_hit_time      {};
+	int score				{};
 
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle
@@ -85,6 +86,8 @@ public:
 	std::array<chars_skills_info, PLAYER_COUNT> send_info		{}; // update에서 스킬 생성자 전달 / players, skills 에서 정보 획득
 
 	timer game_timer                                            {};
+	float time_remaining										{};
+
 
 	void start_game();
 	void add_player(const player_info& info);

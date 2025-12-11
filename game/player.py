@@ -34,7 +34,9 @@ class Walk:
             player.direction = 'l'
             player.player_dx = -5
             player.frame = 0
-    def exit(self):
+
+    @staticmethod
+    def exit(player):
         pass
     @staticmethod
     def do(player):
@@ -48,6 +50,8 @@ class Walk:
             player.player_x += player.player_dx * player.run_speed * game_framework.frame_time
         player.frame = (player.frame + FRAMES_PER_ACTION[0]*ACTION_PER_TIME[0] * game_framework.frame_time)%FRAMES_PER_ACTION[0]
 
+        if player.hp <= 0:
+            player.state_machine.add_event(('DEAD', 0))
     @staticmethod
     def draw(player):
 
@@ -72,7 +76,8 @@ class Idle:
     def enter(player, e):
         player.frame = 0
 
-    def exit(self):
+    @staticmethod
+    def exit(player):
         pass
 
     @staticmethod
@@ -84,6 +89,9 @@ class Idle:
             player.idle_motion[int(player.frame)].opacify(1)
             player.jump_motion.opacify(1)
         player.frame = (player.frame + FRAMES_PER_ACTION[1]*ACTION_PER_TIME[1] * game_framework.frame_time)%FRAMES_PER_ACTION[1]
+
+        if player.hp <= 0:
+            player.state_machine.add_event(('DEAD', 0))
 
     @staticmethod
     def draw(player):
@@ -103,6 +111,48 @@ class Idle:
     def get_name():
         return "Idle\0"
 
+class Dead:
+    @staticmethod
+    def enter(player, e):
+        player.frame = 0
+
+    @staticmethod
+    def exit(player):
+        player.player_x = randint(20, config.width-20)
+        player.player_y = randint(200, config.height-20)
+
+
+    @staticmethod
+    def do(player):
+        if player.player_heart:
+            player.idle_motion[int(player.frame)].opacify(10000 * game_framework.frame_time % 2)
+            player.jump_motion.opacify(10000 * game_framework.frame_time % 2)
+        else:
+            player.idle_motion[int(player.frame)].opacify(1)
+            player.jump_motion.opacify(1)
+        player.frame = (player.frame + FRAMES_PER_ACTION[1]*ACTION_PER_TIME[1] * game_framework.frame_time)%FRAMES_PER_ACTION[1]
+
+        if player.hp > 0:
+            player.state_machine.add_event(('REVIVE', 0))
+
+    @staticmethod
+    def draw(player):
+        if not player.player_jump:
+            if player.direction == 'r':
+                player.idle_motion[int(player.frame)].composite_draw(0, 'h', player.player_x + 10, player.player_y)
+            else:
+                player.idle_motion[int(player.frame)].draw(player.player_x - 20, player.player_y)
+        else:
+            if player.direction == 'r':
+                player.jump_motion.composite_draw(0, 'h', player.player_x - 15, player.player_y + 5)
+            else:
+                player.jump_motion.draw(player.player_x + 15, player.player_y + 5)
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Dead\0"
+
 class Brds:
     @staticmethod
     def enter(player, e):
@@ -114,14 +164,18 @@ class Brds:
         # 그럼 위에 add_object는 지워야 할 듯
         network.send_buffer.skill_info.update(2, player)
 
-    def exit(self):
+    @staticmethod
+    def exit(player):
         pass
     @staticmethod
     def do(player):
         player.frame = (player.frame + FRAMES_PER_ACTION[3]*ACTION_PER_TIME[3] * game_framework.frame_time)%FRAMES_PER_ACTION[3]
         if get_time() - player.start_time >= TIME_PER_ACTION[3]:
             player.state_machine.add_event(('TIME_OUT', 0))
-                
+
+        if player.hp <= 0:
+            player.state_machine.add_event(('DEAD', 0))
+
     @staticmethod
     def draw(player):
         if player.direction == 'r':
@@ -149,16 +203,20 @@ class Aura:
         else:
             player.state_machine.add_event(('TIME_OUT', 0))
 
-
-
-    def exit(self):
+    @staticmethod
+    def exit(player):
         pass
+
     @staticmethod
     def do(player):
         
         player.frame = (player.frame + FRAMES_PER_ACTION[2]*ACTION_PER_TIME[2] * game_framework.frame_time)%FRAMES_PER_ACTION[2]
         if get_time() - player.start_time >= TIME_PER_ACTION[2]:
             player.state_machine.add_event(('TIME_OUT', 0))
+
+        if player.hp <= 0:
+            player.state_machine.add_event(('DEAD', 0))
+
     @staticmethod
     def draw(player):
         if player.direction == 'r':
@@ -178,7 +236,8 @@ class Wait:
 
         player.frame = 0
 
-    def exit(self):
+    @staticmethod
+    def exit(player):
         pass
 
     @staticmethod
@@ -191,6 +250,9 @@ class Wait:
             player.jump_motion.opacify(1)
         player.frame = (player.frame + FRAMES_PER_ACTION[1] * ACTION_PER_TIME[1] * game_framework.frame_time) % \
                        FRAMES_PER_ACTION[1]
+
+        if player.hp <= 0:
+            player.state_machine.add_event(('DEAD', 0))
 
     @staticmethod
     def draw(player):
@@ -298,6 +360,7 @@ class Player:
         if self.hp<=0:
             self.sound.play()
             self.state_machine.add_event(('DEAD', 0))
+            
         if(self.player_x +10 <self.temp_xy[0] or self.player_x -20 > self.temp_xy[2]) or\
             self.event.type == SDL_KEYDOWN and self.event.key == SDLK_DOWN :
             self.ground=106+config.up
@@ -317,6 +380,9 @@ class Player:
         network.send_buffer.char_info.update(self)
 
     def handle_event(self, event):
+        if self.hp <= 0 :
+            return
+
         if event.type == SDL_KEYDOWN and event.key == SDLK_LALT and not self.player_jump:
             self.player_jump=True
             self.player_dy=25

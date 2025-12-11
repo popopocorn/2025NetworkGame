@@ -2,9 +2,17 @@
 
 void game_manager::start_game()
 {
+	char start_message{ '1' };
 	for (auto p : players) {
-		send(p.sock, (const char*)'1', 1, 0);
+		send(p.sock, &start_message, 1, 0);
 	}
+	game_timer.restore();
+	time_remaining = 15.0f; // 테스트용
+	//time_remaining = INIT_GAME_TIME;
+	
+	SetEvent(start_event);
+
+	std::print("[SERVER] Game Start\n");
 }
 
 void game_manager::add_player(const player_info& info)
@@ -13,7 +21,7 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
-	players[info.id].hp = 1000.0f;
+	players[info.id].hp = INIT_HP;
 	players[info.id].heart = false;
 }
 
@@ -23,33 +31,40 @@ void game_manager::handle_collision()
 	{
 		if (s.type < 0)  
 			continue;
-
+		//std::print("[DEBUG] Skill{:03} is enabled\n", static_cast<int>(s.type));
 		// 스킬의 AABB
 		RECT skill_bb = s.get_bb();
 
 		for (player& p : players)
 		{
 			if (p.id < 0) { continue; }
-
+			if (p.heart) { continue; }
 			if (p.id == s.owner_id) { continue; }   // 자기 스킬은 판정 제외
+			
+			
 
 			RECT player_bb = p.get_bb();
 
 			if (intersects(skill_bb, player_bb))
 			{
-				std::print("Player{:02} collieds Skill{:02} owned by Player{:02}\n", p.id, static_cast<int>(s.type), s.owner_id);
-				std::print("collision info : Player{:02} - LT : ({}, {}), RB : ({}, {}) / Skill{:02} - LT : ({}, {}), RB : ({}, {})\n",
+				std::print("[GAME] Player{:03} collieds with Skill{:03}(owned by Player{:03})\n", p.id, static_cast<int>(s.type), s.owner_id);
+				std::print("\tcollision info : Player{:03} - LT : ({}, {}), RB : ({}, {}) / Skill{:03} - LT : ({}, {}), RB : ({}, {})\n",
 					p.id, player_bb.left, player_bb.top, player_bb.right, player_bb.bottom,
 					static_cast<int>(s.type), skill_bb.left, skill_bb.top, skill_bb.right, skill_bb.bottom);
 
 				p.hp -= s.attack_power;
-				if (p.hp < 0.0f)
-					p.hp = 0.0f;
-
-				s.type = -1;
-				s.frame = 0;
-
 				p.heart = true;
+
+				if (p.hp <= 0.0f) {
+					p.hp = 0.0f;
+					int& score{ players[s.owner_id].score };
+					std::print("[GAME] Player{:03} is dead\n[GAME] Player{:03}'s Score : {} + 1 = {}\n",p.id, s.owner_id, score, score + 1);
+					++players[s.owner_id].score;
+					p.non_hit_time = PLAYER_MAX_DEAD_TIME;
+				}
+				else {
+					p.non_hit_time = PLAYER_MAX_NON_HIT_TIME;
+				}
 				break;
 			}
 		}
@@ -91,6 +106,7 @@ void game_manager::dispatch()
 				obj.direction = -1;    // 왼쪽
 			}
 
+			obj.frame = 0.f;
 			obj.type = info.skill.skill_id;
 			obj.attack_power = info.skill.skill_ad;
 			obj.owner_id = id;
@@ -121,8 +137,9 @@ void game_manager::dispatch()
 void game_manager::update()
 {
 	game_timer.tick(1000.0f);
+	time_remaining -= game_timer.get_delta_time();
 
-	dispatch();
+	
 	
 	// 스킬 업데이트
 	for (skill_object& skill : skills) {
@@ -134,22 +151,6 @@ void game_manager::update()
 		p.update(game_timer.get_delta_time());
 	}
 
-	float t = game_timer.get_total_time();
-
-	// static 으로 이전 출력 시간 저장
-	static float last_print_time = 0.0f;
-
-	// 1초 간격으로만 출력
-	if (t - last_print_time >= 1.0f)
-	{
-		last_print_time = t;
-
-		printf("\rGame Time: %.0f seconds ", t); // 콘솔 한 줄에 갱신되는 출력
-		fflush(stdout);   // 즉시 화면 업데이트
-	}
-
-	// 충돌 + hp 계산
-	handle_collision();
 }
 
 bool game_manager::intersects(const RECT& a, const RECT& b) const
@@ -174,7 +175,7 @@ void game_manager::broadcast()
 			send_info[id].characters.my_char_hp = players[id].hp;
 
 			// 남은 시간. 추후 Timer 작성 후, 수정 필요
-			send_info[id].characters.time_remaining = 15.57f;
+			send_info[id].characters.time_remaining = time_remaining;
 
 			// 피격
 			send_info[id].characters.my_char_heart = players[id].heart;
@@ -212,11 +213,14 @@ void game_manager::broadcast()
 void player::update(float fDeltaTime)
 {
 	if (heart) {
-		non_hit_time += fDeltaTime;
+		non_hit_time -= fDeltaTime;
 
-		if (non_hit_time >= PLAYER_MAX_NON_HIT_TIME) {
-			non_hit_time = 0.f;
+		if (non_hit_time <= 0.f) {
 			heart = false;
+
+			if (hp <= 0.0f) {
+				hp = INIT_HP;
+			}
 		}
 	}
 }
@@ -233,8 +237,11 @@ RECT player::get_bb() const
 
 bool game_manager::end_game()
 {
-	float end_time = game_timer.get_total_time();
-	if (end_time < 60.0f) return false; //60초 미만이면 false반환
+	if (time_remaining >= 0.0f) { return false; } //남은 시간 0초 이상이면 false반환
+
+	////////////////////
+	// ? - 신태양
+	////////////////////
 
 	int winner_id = -1;
 	float best_hp = -1.0f;
@@ -366,12 +373,12 @@ RECT skill_object::get_bb()
 
 	case 1: // Aura 
 		if (direction == 1) {  // 오른쪽 공격
-			box.left = static_cast<LONG>(loc.x);
-			box.right = static_cast<LONG>(loc.x + 150.0f);
+			box.left = static_cast<LONG>(loc.x - 40.f);
+			box.right = static_cast<LONG>(loc.x + 40.f);
 		}
 		else {                 // 왼쪽 공격
-			box.left = static_cast<LONG>(loc.x - 150.0f);
-			box.right = static_cast<LONG>(loc.x);
+			box.left = static_cast<LONG>(loc.x - 40.f);
+			box.right = static_cast<LONG>(loc.x + 40.f);
 		}
 		box.top = static_cast<LONG>(loc.y - 50.0f);
 		box.bottom = static_cast<LONG>(loc.y + 50.0f);
