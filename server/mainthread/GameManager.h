@@ -98,3 +98,4 @@ public:
 	void broadcast();
 	bool end_game();
 };
+int send_all(SOCKET sock, const char* data, int len)
