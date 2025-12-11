@@ -64,21 +64,19 @@ class scoreUI:
     def __init__(self):
         self.font=load_font(config.font, 25)
         self.image = load_image(loadfile.resource_path("back1.png"))
-        scores = network.game_score
-
-        self.scores =[f"내 점수:         {scores[0]}",
-        f"플레이어 1 점수:  {scores[1]}",
-        f"플레이어 2 점수:  {scores[2]}"]
+        self.score = network.game_score
+        self.scores =["", "", ""]
 
     def draw(self):
         self.image.draw(config.width/2, config.height/2)
         for i in range(3):
             self.font.draw(config.width/2- 100 , config.height/2 - i*100, self.scores[i], (255, 255, 255))
 
-    def setText(self, text):
-        self.sentence = text
     def update(self):
-        pass
+        self.score = network.game_score
+        self.scores =[f"내 점수:         {self.score[0]}",
+        f"플레이어 1 점수:  {self.score[1]}",
+        f"플레이어 2 점수:  {self.score[2]}"]
 
     def handle_events(self, player_info):
         pass

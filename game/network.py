@@ -87,11 +87,12 @@ def start_game():
     
 
 def end_game():
-    global scores
+    global game_score
     try:
         data = client_socket.recv(12)
-        scores = struct.unpack('!iii', data)
-        
+        game_score = struct.unpack('!iii', data)
+        for i in range(3):
+            print(game_score[i])
         return 0
     except:
         return -1
