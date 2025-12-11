@@ -198,8 +198,7 @@ class Wait:
 
     @staticmethod
     def exit(player):
-        player.player_x = randint(20, config.width-20)
-        player.player_y = randint(200, config.height-20)
+        pass
 
     @staticmethod
     def do(player):
@@ -237,8 +236,9 @@ class Dead:
     @staticmethod
     def enter(player, e):
         player.frame = 0
-    def exit(self):
-        pass
+    def exit(player):
+        player.player_x = randint(20, config.width-20)
+        player.player_y = randint(200, config.height-20)
 
     @staticmethod
     def do(player):
