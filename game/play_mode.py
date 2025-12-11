@@ -53,8 +53,29 @@ def init():
     game_world.add_object(player, 2)
     background = Background1()
     game_world.add_object(background, 0)
-    platforms = [Platform( 1020,120 ), Platform(870, 170),  Platform(720, 170),  Platform(570, 170),
-                 Platform(420, 170), Platform(270, 170), Platform(120, 120)]
+    # 기준 플랫폼 (아래층)
+    base_x_positions = [1020, 870, 720, 570, 420, 270, 120]
+    base_y = 120
+
+    platforms = []
+
+    layers = 4              # 총 층 수
+    y_gap = 80              # 층 간 y 차이 (조금씩만 높이기)
+    shift_amount = 50       # 층마다 좌우 시프트량
+
+    for i in range(layers):
+        y = base_y + (layers - 1 - i) * y_gap    # 위층부터 생성
+
+        # 층마다 좌 → 우 → 좌 → 우로 엇갈리게 시프트
+        if i % 2 == 0:
+            shift = shift_amount
+        else:
+            shift = -shift_amount
+
+        for x in base_x_positions:
+            platforms.append(Platform(x + shift, y))
+
+
     for platform in platforms:
         game_world.add_object(platform, 0)
     game_world.add_collision_pair("player:platform", player, None)
