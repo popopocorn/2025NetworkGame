@@ -73,7 +73,7 @@ class scoreUI:
     def draw(self):
         self.image.draw(config.width/2, config.height/2)
         for i in range(3):
-            self.font.draw(config.width/2- 100 , config.height/2 - i*10, self.scores[i], (255, 255, 255))
+            self.font.draw(config.width/2- 100 , config.height/2 - i*100, self.scores[i], (255, 255, 255))
 
     def setText(self, text):
         self.sentence = text

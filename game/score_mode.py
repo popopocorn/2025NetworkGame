@@ -12,14 +12,21 @@ import main_ui
 
 
 def handle_events():
-    pass
+    events = get_events()
+    for event in events:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+        elif event.type == SDL_KEYDOWN:
+            if event.key == SDLK_ESCAPE:
+                network.closesocket()
+                game_framework.quit()
    
 
 def init():
     global ui
     ui = main_ui.scoreUI()
     game_world.add_object(ui, 4)
-    network.closesocket()
+    
 
 def draw():
     clear_canvas()

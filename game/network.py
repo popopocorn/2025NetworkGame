@@ -87,10 +87,11 @@ def start_game():
     
 
 def end_game():
+    global scores
     try:
         data = client_socket.recv(12)
         scores = struct.unpack('!iii', data)
-        closesocket()
+        
         return 0
     except:
         return -1
@@ -113,7 +114,7 @@ def client_recv_thread():
         print("점수 송신 실패")
 
 def recv_info(recved_info):
-    global client_socket, recv_buffer
+    global client_socket, recv_buffer, game_start
     try:
         data = client_socket.recv(109)
         vals = struct.unpack('!ffBff5s1s??ff5s1s??iff1sfiff1sfiff1sfiff1sf', data)
@@ -121,6 +122,10 @@ def recv_info(recved_info):
         idx = 0
         recved_info.my_char_hp = vals[idx]; idx += 1
         recved_info.time_remaining = vals[idx]; idx += 1
+        if recved_info.time_remaining <= 0:
+            game_start=False
+            return 0
+
         recved_info.heart = bool(vals[idx]); idx += 1
 
         recved_info.other_chars[0].x = vals[idx]; idx += 1
