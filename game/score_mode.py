@@ -9,7 +9,7 @@ import config
 import game_data
 import network
 import main_ui
-
+import title_mode
 
 def handle_events():
     events = get_events()
@@ -18,14 +18,15 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN:
             if event.key == SDLK_ESCAPE:
-                network.closesocket()
-                game_framework.quit()
+                game_framework.change_mode(title_mode)
+
    
 
 def init():
     global ui
     ui = main_ui.scoreUI()
     game_world.add_object(ui, 4)
+    network.closesocket()
     
 
 def draw():

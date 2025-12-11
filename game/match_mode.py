@@ -19,12 +19,13 @@ def handle_events():
 
 def init():   
     global ui
-    network.connect()
-    recv_thread = threading.Thread(target=network.start_game, daemon=True)
-    recv_thread.start()
-    ui = main_ui.matchUI()
-    game_world.add_object(ui, 4)
-    pass
+    if 0 == network.connect():
+        recv_thread = threading.Thread(target=network.start_game, daemon=True)
+        recv_thread.start()
+        ui = main_ui.matchUI()
+        game_world.add_object(ui, 4)
+    else:
+        game_framework.change_mode(logo_mode)
 
 def draw():
     clear_canvas()
@@ -33,6 +34,8 @@ def draw():
     update_canvas()
 
 def finish():
+    global match_timer
+    match_timer = 0
     game_world.clear()
 
 def update():

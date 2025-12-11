@@ -7,7 +7,7 @@ network_config = dict()
 
 # 서버와 통신을 위해 사용되는 소켓        # 신태양 11/06
 # IPv4, TCP
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket = None
 
 # 서버에 데이터 전송을 위해 존재하는 버퍼(컨테이너).     # 신태양 11/06
 send_buffer = Send_buffer()
@@ -54,6 +54,7 @@ def load_network_config(filename):
 def connect():
     global client_socket, network_config
     try:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((network_config['IP'], network_config['PORT']))
         return 0
     except:
@@ -91,8 +92,6 @@ def end_game():
     try:
         data = client_socket.recv(12)
         game_score = struct.unpack('!iii', data)
-        for i in range(3):
-            print(game_score[i])
         return 0
     except:
         return -1

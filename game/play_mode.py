@@ -102,11 +102,7 @@ def update_info():
 
     with network.recv_buf_lock:
         local_recv_buffer, network.global_recv_buffer = network.global_recv_buffer, local_recv_buffer
-    if len(local_recv_buffer) == 0:
-        return
 
-    if local_recv_buffer[-1].time_remaining <=0:
-        network.game_start = False
     for a in local_recv_buffer:
         for i in range(4):
             match a.skills[i].skill_id:

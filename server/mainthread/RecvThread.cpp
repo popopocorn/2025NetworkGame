@@ -7,7 +7,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 
 	delete (player_info*)arg;
 
-	std::print("[System] Create Thread : Recv Thread for Player{}\n", player_sock_info.id);
+	std::print("[System] Create Thread : Recv Thread for Player{:03}\n", player_sock_info.id);
 
 	std::pair<int, char_skill_info> info;
 	info.first = player_sock_info.id;
@@ -26,7 +26,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 		}
 		else if (ret == SOCKET_ERROR)
 		{
-			err_display(std::format("Player{:03}'s Socket recv()", player_sock_info.id).c_str());
+			err_display(std::format("Player{:03}'s Socket recv(:03)", player_sock_info.id).c_str());
 			break;
 		}
 
