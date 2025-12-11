@@ -15,13 +15,13 @@ match_timer=0
 def handle_events():
     pass
    
-ui = main_ui.matchUI()
+
 def init():   
     global ui
     network.connect()
     recv_thread = threading.Thread(target=network.start_game, daemon=True)
     recv_thread.start()
-    
+    ui = main_ui.matchUI()
     game_world.add_object(ui, 4)
     pass
 

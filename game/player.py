@@ -210,7 +210,29 @@ class Wait:
     def get_name():
         return "Wait\0"
 
+class Dead:
+    @staticmethod
+    def enter(player, e):
+        player.start_time = get_time()
+        player.frame = 0
 
+    def exit(self):
+        pass
+
+    @staticmethod
+    def do(player):
+        if get_time() - player.start_time > 3:
+            player.state_machine.add_event(('TIME_OUT', 0))
+
+    @staticmethod
+    def draw(player):
+        player.tomb_stone.draw(player.player_x + 15, player.player_y + 5)
+                
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Dead\0"
 
 class Player:
     def __init__(self):
@@ -240,7 +262,8 @@ class Player:
         self.temp_xy=[0, 0, 0, 0]
         self.walk_motion = [load_image(loadfile.resource_path("walk" + str(x) + ".png")) for x in range(4)]
         self.idle_motion = [load_image(loadfile.resource_path("idle" + str(x) + ".png")) for x in range(3)]
-        self.jump_motion = load_image((loadfile.resource_path("jump.png")))
+        self.jump_motion = load_image(loadfile.resource_path("jump.png"))
+        self.tomb_stone = load_image(loadfile.resource_path("Tombstone.png"))
 
         self.skill_motion=0
         self.aura_blade_motion = [load_image(loadfile.resource_path("auraBlade" +str(i) +".png")) for i in range(5)]
@@ -258,11 +281,12 @@ class Player:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions(
             {
-                Walk: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, q_down: Aura,  w_down: Brds},
-                Idle: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds},
-                Aura: {time_out: Wait},
-                Brds: {time_out: Wait},
-                Wait: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds},
+                Walk: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, q_down: Aura,  w_down: Brds, is_dead: Dead},
+                Idle: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds, is_dead: Dead},
+                Aura: {time_out: Wait, is_dead: Dead},
+                Brds: {time_out: Wait, is_dead: Dead},
+                Wait: {right_down: Walk, left_down: Walk, q_down: Aura,  w_down: Brds, is_dead: Dead},
+                Dead: {time_out : Idle}
             }
         )
     def draw(self):
@@ -272,9 +296,9 @@ class Player:
         if config.debug_flag:
             draw_rectangle(*self.get_bb())
     def update(self):
-#        if self.hp<=0:
-#            self.sound.play()
-#            game_framework.change_mode(end_mode)
+        if self.hp<=0:
+            self.sound.play()
+            self.state_machine.add_event(('DEAD', 0))
         if(self.player_x +10 <self.temp_xy[0] or self.player_x -20 > self.temp_xy[2]) or\
             self.event.type == SDL_KEYDOWN and self.event.key == SDLK_DOWN :
             self.ground=106+config.up

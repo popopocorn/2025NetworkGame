@@ -28,6 +28,9 @@ def w_down(e):
         if e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_w:
             return True
     return False
+def is_dead(e):
+    if e[0] == "DEAD": return True
+    return False
 
 
 

@@ -176,6 +176,28 @@ class Wait:
     @staticmethod
     def get_name():
         return "Wait\0"
+class Dead:
+    @staticmethod
+    def enter(enemy):
+        enemy.start_time = get_time()
+        enemy.frame = 0
+
+    def exit(self):
+        pass
+
+    @staticmethod
+    def do(enemy):
+        pass
+
+    @staticmethod
+    def draw(enemy):
+        enemy.tomb_stone.draw(enemy.enemy_x + 15, enemy.enemy_y + 5)
+                
+
+    # 상태의 char[4]를 가져오기 위한 함수        # 신태양 11/06
+    @staticmethod
+    def get_name():
+        return "Dead\0"
 
 
 STATE_MAP ={
@@ -184,6 +206,7 @@ STATE_MAP ={
     "Brds\0": Brds,
     "Aura\0": Aura,
     "Wait\0": Wait,
+    "Dead\0": Dead,
     "NULL\0": Idle,
     "\0": Idle,
 }
@@ -198,7 +221,7 @@ class Enemy:
         self.walk_motion = [load_image(loadfile.resource_path("walk" + str(x) + ".png")) for x in range(4)]
         self.idle_motion = [load_image(loadfile.resource_path("idle" + str(x) + ".png")) for x in range(3)]
         self.jump_motion = load_image((loadfile.resource_path("jump.png")))
-
+        self.tomb_stone = load_image(loadfile.resource_path("Tombstone.png"))
         self.skill_motion=0
         self.aura_blade_motion = [load_image(loadfile.resource_path("auraBlade" +str(i) +".png")) for i in range(5)]
         self.brandish_motion = [load_image(loadfile.resource_path("brandish" + str(i)+".png")) for i in range(7)]
