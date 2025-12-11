@@ -17,7 +17,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 	while (true)
 	{
 		// recv_info ºÎºÐ
-		int ret = recv(player_sock_info.sock, (char*)&info.second, sizeof(char_skill_info), 0);
+		int ret = recv(player_sock_info.sock, (char*)&info.second, sizeof(char_skill_info), MSG_WAITALL);
 		
 		if (ret == 0)
 		{
