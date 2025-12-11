@@ -9,7 +9,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 	std::pair<int, char_skill_info> info;
 	info.first = player_sock_info.id;
 
-	HANDLE hConsole{ GetStdHandle(STD_OUTPUT_HANDLE) };
+	WaitForSingleObject(start_event, INFINITE);
 
 	while (true)
 	{

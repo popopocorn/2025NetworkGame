@@ -2,6 +2,7 @@
 
 std::queue<std::pair<int, char_skill_info>> global_recv_queue;
 std::mutex buffer_gaurd;
+HANDLE start_event;
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(const char* msg)

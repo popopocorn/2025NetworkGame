@@ -8,3 +8,4 @@ php = 0
 mhp = 1000
 pmp = 0
 mmp = 250
+remaining_time = 0

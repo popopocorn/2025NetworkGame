@@ -1,28 +1,5 @@
 #include "main.h"
 
-bool game_start = false;
-
-// start_game 
-void start_game()
-{
-    if (current_player_count == 3)
-    {
-        const char* start_msg = "[SERVER] Game_start!";
-        int len = static_cast<int>(strlen(start_msg));
-
-        // 플레이어들에게 start_msg 보내기
-        for (player& p : main_game->players)
-        {
-            int ret = send(p.sock, start_msg, len, 0);
-
-            if (ret == SOCKET_ERROR) {
-                err_display("send(start_msg)");
-            }
-        }
-        game_start = true;
-    }
-}
-// --------------------------- main부분 ---------------------------------
 int main()
 {
     WSADATA wsa;
@@ -63,6 +40,7 @@ int main()
 
     
     main_game = std::make_unique<game_manager>();
+    start_event = CreateEvent(NULL, TRUE, FALSE, NULL);
 
     // 인원 모으기
     //while (current_player_count < 1) // 테스트용
@@ -102,23 +80,22 @@ int main()
 
         CloseHandle(hThread);
     }
+
+
     main_game->start_game();
 
-    // 게임시작
-    start_game();
-    main_game->game_timer.reset_total_time();
     // 게임루프
-    while (game_start)
+    while (1)
     {
-       
+        main_game->dispatch();
         main_game->update();
         main_game->broadcast();
+        main_game->handle_collision();
 
         // 게임 종료 조건 체크 
         if (main_game->end_game())
         {
             // 루프 종료
-            game_start = false; 
             break;
         }
     }
