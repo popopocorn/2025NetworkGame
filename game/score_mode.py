@@ -17,9 +17,9 @@ def handle_events():
 
 def init():
     global ui
-    network.connect()
     ui = main_ui.scoreUI()
     game_world.add_object(ui, 4)
+    network.closesocket()
 
 def draw():
     clear_canvas()

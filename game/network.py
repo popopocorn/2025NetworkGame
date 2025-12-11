@@ -90,6 +90,7 @@ def end_game():
     try:
         data = client_socket.recv(12)
         scores = struct.unpack('!iii', data)
+        closesocket()
         return 0
     except:
         return -1
