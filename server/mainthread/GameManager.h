@@ -44,6 +44,7 @@ struct player {
 	bool heart				{};
 	float hp				{};
 	float non_hit_time      {};
+	int score				{};
 
 	void print() const {
 		// [update] ID : 1 === Char : (x, y) = (1557.1557, 888.4844), State = Idle

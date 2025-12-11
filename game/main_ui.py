@@ -75,13 +75,13 @@ class RemainingTimeUI:
         self.sentence = str()
         min = int(game_data.remaining_time) // 60
         sec = int(game_data.remaining_time) % 60
-        if min > 10:
+        if min >= 10:
             self.sentence += str(min)
         else:
             self.sentence += '0'
             self.sentence += str(min)
         self.sentence += ':'
-        if sec > 10:
+        if sec >= 9:
             self.sentence += str(sec)
         else:
             self.sentence += '0'

@@ -2,11 +2,16 @@
 
 void game_manager::start_game()
 {
+	char start_message{ '1' };
 	for (auto p : players) {
-		send(p.sock, (const char*)'1', 1, 0);
+		send(p.sock, &start_message, 1, 0);
 	}
 	game_timer.restore();
-	time_remaining = 183.0f;
+	time_remaining = INIT_GAME_TIME;
+	
+	SetEvent(start_event);
+
+	std::print("[SERVER] Game Start\n");
 }
 
 void game_manager::add_player(const player_info& info)
@@ -15,7 +20,7 @@ void game_manager::add_player(const player_info& info)
 	if (info.id < 0 or info.id > PLAYER_COUNT) { return; }
 	players[info.id].id = info.id;
 	players[info.id].sock = info.sock;
-	players[info.id].hp = 1000.0f;
+	players[info.id].hp = INIT_HP;
 	players[info.id].heart = false;
 }
 
@@ -25,7 +30,7 @@ void game_manager::handle_collision()
 	{
 		if (s.type < 0)  
 			continue;
-
+		//std::print("[DEBUG] Skill{:03} is enabled\n", static_cast<int>(s.type));
 		// 스킬의 AABB
 		RECT skill_bb = s.get_bb();
 
@@ -34,21 +39,31 @@ void game_manager::handle_collision()
 			if (p.id < 0) { continue; }
 			if (p.heart) { continue; }
 			if (p.id == s.owner_id) { continue; }   // 자기 스킬은 판정 제외
+			
+			
 
 			RECT player_bb = p.get_bb();
 
 			if (intersects(skill_bb, player_bb))
 			{
-				std::print("Player{:03} collieds Skill{:03}(owned by Player{:03})\n", p.id, static_cast<int>(s.type), s.owner_id);
-				std::print("collision info : Player{:03} - LT : ({}, {}), RB : ({}, {}) / Skill{:03} - LT : ({}, {}), RB : ({}, {})\n",
+				std::print("[GAME] Player{:03} collieds with Skill{:03}(owned by Player{:03})\n", p.id, static_cast<int>(s.type), s.owner_id);
+				std::print("\tcollision info : Player{:03} - LT : ({}, {}), RB : ({}, {}) / Skill{:03} - LT : ({}, {}), RB : ({}, {})\n",
 					p.id, player_bb.left, player_bb.top, player_bb.right, player_bb.bottom,
 					static_cast<int>(s.type), skill_bb.left, skill_bb.top, skill_bb.right, skill_bb.bottom);
 
 				p.hp -= s.attack_power;
-				if (p.hp < 0.0f)
-					p.hp = 0.0f;
-
 				p.heart = true;
+
+				if (p.hp <= 0.0f) {
+					p.hp = 0.0f;
+					int& score{ players[s.owner_id].score };
+					std::print("[GAME] Player{:03} is dead\n[GAME] Player{:03}'s Score : {} + 1 = {}\n",p.id, s.owner_id, score, score + 1);
+					++players[s.owner_id].score;
+					p.non_hit_time = PLAYER_MAX_DEAD_TIME;
+				}
+				else {
+					p.non_hit_time = PLAYER_MAX_NON_HIT_TIME;
+				}
 				break;
 			}
 		}
@@ -90,6 +105,7 @@ void game_manager::dispatch()
 				obj.direction = -1;    // 왼쪽
 			}
 
+			obj.frame = 0.f;
 			obj.type = info.skill.skill_id;
 			obj.attack_power = info.skill.skill_ad;
 			obj.owner_id = id;
@@ -198,11 +214,14 @@ void game_manager::broadcast()
 void player::update(float fDeltaTime)
 {
 	if (heart) {
-		non_hit_time += fDeltaTime;
+		non_hit_time -= fDeltaTime;
 
-		if (non_hit_time >= PLAYER_MAX_NON_HIT_TIME) {
-			non_hit_time = 0.f;
+		if (non_hit_time <= 0.f) {
 			heart = false;
+
+			if (hp <= 0.0f) {
+				hp = INIT_HP;
+			}
 		}
 	}
 }
