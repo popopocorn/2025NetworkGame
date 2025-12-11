@@ -3,13 +3,27 @@
 int main()
 {
     WSADATA wsa;
-    SOCKET server_sock;
-    struct sockaddr_in server_addr;
+
     // 윈속 초기화
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
         err_quit("WSAStartup()");
     }
+
+    while (1) {
+        game_roop();
+    }
+    
+    WSACleanup();
+    return 0;
+}
+
+void game_roop()
+{
+    std::print("[SERVER] CREATE NEW GAME\n");
+
+    SOCKET server_sock;
+    struct sockaddr_in server_addr;
 
     // 소켓 생성
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -24,7 +38,7 @@ int main()
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(config.get_port_number());
-    
+
     if (bind(server_sock, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR)
     {
         err_quit("bind()");
@@ -36,9 +50,9 @@ int main()
         err_quit("listen()");
     }
 
-    std::cout << "Server listen...\n";
+    std::cout << "[NETWORK] Server listen...\n";
 
-    
+
     main_game = std::make_unique<game_manager>();
     start_event = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -57,10 +71,10 @@ int main()
             continue;
         }
 
-        std::cout << "Client Accept : " << inet_ntoa(client_addr.sin_addr) << std::endl;
+        std::cout << "[NETWORK] Client Accept : " << inet_ntoa(client_addr.sin_addr) << std::endl;
 
         // 스레드 생성 후 스레드 내에서 복사 후 해제 or 스레드 생성 실패 시 바로 해제
-        player_info* info = new player_info{ .sock = client_sock , .id = current_player_count};
+        player_info* info = new player_info{ .sock = client_sock , .id = current_player_count };
 
         if (main_game) { main_game->add_player(*info); }
 
@@ -80,7 +94,7 @@ int main()
 
         CloseHandle(hThread);
     }
-
+    closesocket(server_sock);
 
     main_game->start_game();
 
@@ -96,12 +110,8 @@ int main()
         if (main_game->end_game())
         {
             // 루프 종료
+            current_player_count = 0;
             break;
         }
     }
-    closesocket(server_sock);
-    WSACleanup();
-    return 0;
 }
-
-

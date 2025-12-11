@@ -239,84 +239,21 @@ bool game_manager::end_game()
 {
 	if (time_remaining >= 0.0f) { return false; } //남은 시간 0초 이상이면 false반환
 
-	////////////////////
-	// ? - 신태양
-	////////////////////
+	std::print("[SERVER] GAME END\n");
 
-	int winner_id = -1;
-	float best_hp = -1.0f;
+	for (auto i = 0; i < PLAYER_COUNT; ++i) {
 
-	// 1) HP 비교 준비
-	// players 배열에서 유효한 hp만 모아서 모두 같은지 검사
-	float hp_list[PLAYER_COUNT];
-	int alive_count = 0;
+		std::print("[GAME] Player{:03}'s score : {}\n", i, players[i].score);
 
-	for (int i = 0; i < PLAYER_COUNT; ++i)
-	{
-		player& p = players[i];
-		if (p.id >= 0 && p.hp > 0.0f)
-		{
-			hp_list[alive_count++] = p.hp;
-
-			// 동시에 최고 hp 플레이어 탐색
-			if (p.hp > best_hp)
-			{
-				best_hp = p.hp;
-				winner_id = i;
-			}
+		std::array<int, PLAYER_COUNT> score_for_send{};
+		for (auto j = 0; j < PLAYER_COUNT; ++j) {
+			score_for_send[j] = ::htonl(players[(i + j) % PLAYER_COUNT].score);
 		}
+
+		send(players[i].sock, (char*)score_for_send.data(), sizeof(int)*PLAYER_COUNT, 0);
+
 	}
 
-
-	// 2) DRAW 조건 체크
-	// alive_count가 2명 이상이고
-	// 모든 hp가 동일하면 DRAW
-
-	bool is_draw = false;
-	if (alive_count >= 2)
-	{
-		is_draw = true;
-		float base = hp_list[0];
-		for (int i = 1; i < alive_count; ++i)
-		{
-			if (hp_list[i] != base)
-			{
-				is_draw = false;
-				break;
-			}
-		}
-	}
-
-	const char* draw_msg = "DRAW";
-	const char* win_msg = "WIN";
-	const char* lose_msg = "LOSE";
-
-
-	// 3) 승패 메시지 전송
-	for (int i = 0; i < PLAYER_COUNT; ++i)
-	{
-		player& p = players[i];
-
-		if (p.id < 0) continue;
-		if (p.sock == INVALID_SOCKET) continue;
-
-		const char* msg = nullptr;
-
-		if (is_draw)
-		{
-			msg = draw_msg;
-		}
-		else
-		{
-			msg = (i == winner_id ? win_msg : lose_msg);
-		}
-
-		int len = static_cast<int>(std::strlen(msg));
-		int ret = send(p.sock, msg, len, 0);
-		if (ret == SOCKET_ERROR) {
-			err_display("send(end_game msg)");
-		}
-	}
 
 	return true;
 }

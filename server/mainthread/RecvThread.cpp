@@ -2,9 +2,12 @@
 
 DWORD WINAPI recv_thread(LPVOID arg)
 {
+
 	player_info player_sock_info = *(player_info*)(arg);
 
 	delete (player_info*)arg;
+
+	std::print("[System] Create Thread : Recv Thread for Player{}\n", player_sock_info.id);
 
 	std::pair<int, char_skill_info> info;
 	info.first = player_sock_info.id;
@@ -18,13 +21,12 @@ DWORD WINAPI recv_thread(LPVOID arg)
 		
 		if (ret == 0)
 		{
-			// 클라가 정상 종료
-			std::cout << "Client Connection lost\n";
+			std::print("[Network] Player{:03}'s Client Connection lost\n", player_sock_info.id);
 			break;
 		}
 		else if (ret == SOCKET_ERROR)
 		{
-			err_display("recv()");
+			err_display(std::format("Player{:03}'s Socket recv()", player_sock_info.id).c_str());
 			break;
 		}
 
@@ -37,6 +39,7 @@ DWORD WINAPI recv_thread(LPVOID arg)
 		
 	}
 
+	std::print("[System] Exit Thread : Recv Thread for Player{}\n", player_sock_info.id);
 	closesocket(player_sock_info.sock);
 	return 0;
 }

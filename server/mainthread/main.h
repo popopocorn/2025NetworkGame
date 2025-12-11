@@ -5,4 +5,5 @@
 
 int current_player_count{};
 
+void game_roop();
 std::unique_ptr<game_manager> main_game;

@@ -27,7 +27,7 @@ void err_display(const char* msg)
 		NULL, WSAGetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(char*)&lpMsgBuf, 0, NULL);
-	std::print("{} - {}\n", msg, (char*)lpMsgBuf);
+	std::print("[ERROR] {} - {}", msg, (char*)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 }
 

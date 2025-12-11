@@ -59,6 +59,11 @@ def connect():
         print("Failed to connect")
         return -1
 
+def closesocket():
+    global client_socket, network_config
+    client_socket.shutdown(socket.SHUT_RDWR)
+    client_socket.close()
+
 # send_buffer에 들어 있는 값을 보낸다.        # 신태양 11/06
 # 성공시 0, 실패시 -1 리턴
 def send_info():

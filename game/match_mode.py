@@ -5,6 +5,7 @@ import random
 import game_world
 import game_framework
 import play_mode as next_mode
+import logo_mode
 import config
 import game_data
 import network
@@ -17,11 +18,13 @@ def handle_events():
    
 
 def init():   
-    network.connect()
-    recv_thread = threading.Thread(target=network.start_game, daemon=True)
-    recv_thread.start()
-    ui = main_ui.matchUI()
-    game_world.add_object(ui, 4)
+    if 0 == network.connect():
+        recv_thread = threading.Thread(target=network.start_game, daemon=True)
+        recv_thread.start()
+        ui = main_ui.matchUI()
+        game_world.add_object(ui, 4)
+    else :
+        game_framework.change_mode(logo_mode)
     pass
 
 def draw():
