@@ -202,7 +202,14 @@ void game_manager::broadcast()
 
 	for (int id = 0; id < PLAYER_COUNT; ++id) {
 		send_info[id].hton();
-		send(players[id].sock, (char*)&send_info[id], sizeof(chars_skills_info), 0);
+		int result = send_all(players[id].sock,
+			(char*)&send_info[id],
+			sizeof(chars_skills_info));
+
+		if (result != sizeof(chars_skills_info)) {
+			printf("Player%d send failed\n", id);
+		}
+
 		// 스킬 생성자 정보는 한번만 보낸다.
 		for (skill_info& skill : send_info[id].skills) {
 			skill.disable();
@@ -350,3 +357,18 @@ RECT skill_object::get_bb()
 	return box;
 }
 
+int send_all(SOCKET sock, const char* data, int len)
+{
+	int total_sent = 0;
+
+	while (total_sent < len)
+	{
+		int sent = send(sock, data + total_sent, len - total_sent, 0);
+		if (sent <= 0)
+			return sent;
+
+		total_sent += sent;
+	}
+
+	return total_sent;
+}
