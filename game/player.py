@@ -343,7 +343,8 @@ class Player:
     def handle_event(self, event):
         if self.hp <= 0 :
             return
-
+        if event.type == None:
+            return
         if event.type == SDL_KEYDOWN and event.key == SDLK_LALT and not self.player_jump:
             self.player_jump=True
             self.player_dy=25
