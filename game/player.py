@@ -321,7 +321,7 @@ class Player:
     def update(self):
         if self.hp<=0:
             self.state_machine.add_event(('DEAD', 0))
-        if self.event.type == None:
+        if self.event == None:
             return
         if(self.player_x +10 <self.temp_xy[0] or self.player_x -20 > self.temp_xy[2]) or\
             self.event.type == SDL_KEYDOWN and self.event.key == SDLK_DOWN :
