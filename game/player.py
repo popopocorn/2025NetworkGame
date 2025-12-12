@@ -321,7 +321,8 @@ class Player:
     def update(self):
         if self.hp<=0:
             self.state_machine.add_event(('DEAD', 0))
-
+        if self.event.type == None:
+            return
         if(self.player_x +10 <self.temp_xy[0] or self.player_x -20 > self.temp_xy[2]) or\
             self.event.type == SDL_KEYDOWN and self.event.key == SDLK_DOWN :
             self.ground=106+config.up
@@ -343,8 +344,7 @@ class Player:
     def handle_event(self, event):
         if self.hp <= 0 :
             return
-        if event.type == None:
-            return
+
         if event.type == SDL_KEYDOWN and event.key == SDLK_LALT and not self.player_jump:
             self.player_jump=True
             self.player_dy=25
